@@ -22,6 +22,21 @@ To run the simulations using ROMS data, you need the ROMS data. It is assumed th
 test <- SimulateWorld_ROMS()
 ```
 
+## Workflow
+
+Best to have a separate folder (and RStudio project) for using the package and then a different one for the package. Let's call these
+* Paper: the code that using the package, to do analyses. This would have the Rmd of the paper main text, tables, figures, appendices, etc. Those Rmds, call `library(WRAP)` to get access to the functions as needed.
+* Package: the code for generating OMs, functions to make plots, etc.
+
+Have both projects open in RStudio (2 windows).
+
+* When you change the package code, use Build tab to install and restart. Push changes to GitHub if ready. Change the version number in DESCRIPTION when you have changes. That way everyone can keep track that changes have happened to the package.
+* To reload the package in the paper project (window), do 
+  * Session > Restart R to reload package or
+  * `detach(package:WRAP, unload=TRUE); library(WRAP)`
+  
+This workflow is a bit of a hassle when you are actively working on the paper and package at the same time, but it makes it easier for others to use the OM package and keeps the package code clean.
+
 ## How packages work (simplified):
 
 * Code (functions) are in R folder
