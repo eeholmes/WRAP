@@ -10,7 +10,18 @@ To see how it works
 ```
 library(WRAP)
 ?SimulateWorld
+SimulateWorld()
 ```
+
+How packages work (simplified):
+
+* Code (functions) are in R folder
+* DESCRIPTION file says what libraries are used. When people install, the packages (dependencies) can be automatically installed too.
+* NAMESPACE is what files are exported to users.
+* Documentation is at the top in Roxygen format. The documentation is built when you build the package (see instruction below for that). Users can then use ?SimulateWorld say, to see what the function does.
+
+That's pretty much it.  Package format standardizes documentation but also ensures that your package has no errors that would prevent others from using it. That checking happens (automatically) in the building step.
+
 
 To build
 
@@ -18,7 +29,7 @@ To build
 * Before building however, Click Tools > Project Options > Build Tools and click the 'Generate Documentation with Roxygen'. Click 'Configure' and check 'Build and Reload' check box.
 
 
-**This is work and code by Stephanie Brodie and collaborators.**
+**All this is work and code by Stephanie and collaborators.**
 
 Simple simulation code to prepare for the WRAP Workshop March 23-25, 2020
 
