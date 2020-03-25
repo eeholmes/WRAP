@@ -3,7 +3,7 @@
 To install
 ```
 library(devtools)
-install_github("eeholmes/WRAP")
+install_github("eeholmes/WRAP", dependencies=TRUE)
 ```
 
 To see how it works
