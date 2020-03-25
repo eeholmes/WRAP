@@ -9,7 +9,7 @@
 #' 
 #' @examples
 #' # use defaults
-#' data <- SimulateWorld()
+#' data <- SimulateWorld()$grid
 #' # plot time-series of total catch in observed years
 #' plot(aggregate(abundance~year,data[data$year<=2010,], FUN="sum"),type="l",ylab="Abundance")
 #' # plot time-series of total catch in forecast years
@@ -146,7 +146,13 @@ SimulateWorld <- function(
  
   grid$year <- ifelse(grid$year<=20,grid$year + 2000, grid$year + 2000) #give years meaning: observed years 2000-2020, forecast years 2021-2100.
   
-  return(grid)
+  meta=list(func="SimulateWorld", temp_diff=temp_diff, 
+            temp_spatial=temp_spatial,
+            PA_shape=PA_shape, 
+            abund_enviro=abund_enviro)
+  
+  return(list(meta=meta, grid=grid))
+  
 }
 
 
