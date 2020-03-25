@@ -1,6 +1,6 @@
 #' Simulated World basic
 #' 
-#' Function to simulate species distribution and abundance with respect to environmental covariates
+#' Function to simulate species distribution and abundance with respect to environmental covariates.
 #' 
 #' @param temp_diff specifies min and max temps at year 1 and year 100 (e.g. temp_diff=c(1,3,5,7) means year 1 varies from 1-3C and year 100 from 5-7C)
 #' @param temp_spatial specifies whether we have "simple" linear temp distbn (SB) or added "matern" variation (EW)
@@ -15,6 +15,7 @@
 #' # plot time-series of total catch in forecast years
 #' plot(aggregate(abundance~year,data[data$year>2010,], FUN="sum"),type="l", ylab="Abundance")
 #' 
+#' @export
 SimulateWorld <- function(
   temp_diff=c(1,3,5,7), 
   temp_spatial=c("simple", "matern"), 

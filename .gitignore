@@ -5,6 +5,9 @@
 # Session Data files
 .RData
 
+# Data folder if user happened to put it in the package
+Rasters_2d_monthly
+
 # Example code in package build process
 *-Ex.R
 
@@ -32,3 +35,4 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
+.Rproj.user

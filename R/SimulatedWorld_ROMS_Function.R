@@ -1,17 +1,34 @@
-#Caution: this function uses the downscaled GCMs to simulate species distrubtion
-#It has slight differences to the other SimulatedWorld_function that 'randomly' generates environmental data
-#Remember: 1980-2010 are not observed data (by design)
-
-SimulateWorld_ROMS <- function(PA_shape, abund_enviro, dir){
-  # 'PA_shape' specifies how enviro suitability determines species presence-absence...
-  #... takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
-  # 'abund_enviro' specifies abundance if present, can be "lnorm_low" (SB original)...
-  #... "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
-  library(virtualspecies)
-  library(scales)
-  library(raster)
-  library(glmmfields)
+#' Simulated World ROMS temperature
+#' 
+#' Function uses temperature data from ROMS to generate species distribution and abundance.
+#' 
+#' The ROMS data are assumed to be in the working directory in a folder called 'Rasters_2d_monthly/gfdl/sst_monthly'. If the ROMS data folder is different, you can pass that in via the 'dir' argument. However the ROMS data folder must have subfolders 'gfdl/sst_monthly' so that 'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.
+#' Caution: this function uses the downscaled GCMs to simulate species distrubtion. It has slight differences to the other SimulatedWorld_function that 'randomly' generates environmental data. Remember: 1980-2010 are not observed data (by design)
+#' 
+#' @param PA_shape specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
+#' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
+#' @param dir 
+#' 
+#' @examples
+#' test <- SimulateWorld_ROMS(PA_shape="logistic", abund_enviro="lnorm_low")
+#' head(test)
+#' tail(test)
+#' plot(aggregate(suitability~year, data=test, FUN=mean),type='b')
+#' plot(aggregate(presabs~year, data=test, FUN=sum),type='b')
+#' plot(aggregate(abundance~year, data=test, FUN=sum),type='b')
+#' plot(aggregate(sst~year, data=test, FUN=mean),type='b')
+#' 
+#' @export
+SimulateWorld_ROMS <- function(PA_shape=c("logistic", "logistic_prev", "linear"), abund_enviro=c("lnorm_low", "lnorm_high", "poisson"), dir=file.path(here::here(),"Rasters_2d_monthly")){
+  PA_shape <- match.arg(PA_shape)
+  abund_enviro <- match.arg(abund_enviro)
+  if(!dir.exists(dir))
+    stop(paste("This function requires that dir points to the ROMSdata.\nCurrently dir is pointing to", dir, "\n"))
+  # Within dir, the sst data are here 
+  # Use file.path not paste0 to create platform specific file paths
+  sst_dr <- file.path(dir, "gfdl", "sst_monthly")
   
+
   #----Create output file----
   #Needs to be modified as variables are added. Starting with sst
   #Assuming 400 'samples' are taken each year, from 1980-2100
@@ -19,9 +36,9 @@ SimulateWorld_ROMS <- function(PA_shape, abund_enviro, dir){
   colnames(output) <- c("lon","lat","year","presabs","suitability","sst")
   
   #----Load in rasters----
-  gcm_dr <- 'gfdl'
+  # sst_dr was created at top
 
-  files_sst <- list.files(paste0(dir,'gfdl/sst_monthly'), full.names = TRUE, pattern=".grd") #should be 1452 files
+  files_sst <- list.files(sst_dr, full.names = TRUE, pattern=".grd") #should be 1452 files
   months <- rep(1:12,121) 
   years <- rep(1980:2100,each=12)
   august_indexes <- which(months==8) #picking last month in summer
@@ -33,7 +50,7 @@ SimulateWorld_ROMS <- function(PA_shape, abund_enviro, dir){
     #plot(sst)
  
     #----Use Virtual Species to assign response curve----
-    envir_stack <- stack(sst) #must be in raster stack format
+    envir_stack <- raster::stack(sst) #must be in raster stack format
     names(envir_stack) <- c('sst')
     
     #----assign response curve with mean at 4 degrees----
@@ -52,28 +69,48 @@ SimulateWorld_ROMS <- function(PA_shape, abund_enviro, dir){
     #----Convert suitability to Presence-Absence----
     if (PA_shape == "logistic") {
       #SB: specifies alpha and beta of logistic - creates almost knife-edge absence -> presence
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability", beta = 0.5,
-                                                    alpha = -0.05, species.prevalence = NULL, plot = FALSE, )
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, 
+        PA.method = "probability", 
+        beta = 0.5, 
+        alpha = -0.05, 
+        species.prevalence = NULL, 
+        plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "logistic_prev") {
       #JS: relaxes logistic a little bit, by specifing reduced prevalence and fitting beta (test diff prevalence values, but 0.5 seems realistic)
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability", beta = "random",
-                                                    alpha = -0.3, species.prevalence = 0.5, plot = FALSE)
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, 
+        PA.method = "probability", 
+        beta = "random",
+        alpha = -0.3, 
+        species.prevalence = 0.5, 
+        plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "linear") {
       #JS: relaxes knife-edge absence -> presence further; also specifies prevalence and fits 'b'
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability",
-                                                    prob.method = "linear", a = NULL,
-                                                    b = NULL, species.prevalence = 0.8, plot = FALSE)
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, 
+        PA.method = "probability",
+        prob.method = "linear", 
+        a = NULL,
+        b = NULL, 
+        species.prevalence = 0.8, 
+        plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     # plot(suitability_PA$pa.raster)
     
     #-----Sample Presences and Absences-----
-    presence.points <- sampleOccurrences(suitability_PA,n = 400,type = "presence-absence", 
-                                         detection.probability = 1,error.probability=0, plot = FALSE) #default but cool options to play with                                    )
+    presence.points <- virtualspecies::sampleOccurrences(
+      suitability_PA,
+      n = 400,
+      type = "presence-absence",
+      detection.probability = 1,
+      error.probability=0, 
+      plot = FALSE) 
     df <- cbind(as.data.frame(round(presence.points$sample.points$x,1)),as.data.frame(round(presence.points$sample.points$y,1)))
     colnames(df) <- c("x","y")
     
@@ -108,14 +145,4 @@ SimulateWorld_ROMS <- function(PA_shape, abund_enviro, dir){
 
   return(output)
 }
-
-
-#-----Example-----
-# test <- SimulatedWorld_ROMS(PA_shape="logistic", abund_enviro="lnorm_low")
-# head(test)
-# tail(test)
-# plot(aggregate(suitability~year, data=test, FUN=mean),type='b')
-# plot(aggregate(presabs~year, data=test, FUN=sum),type='b')
-# plot(aggregate(abundance~year, data=test, FUN=sum),type='b')
-# plot(aggregate(sst~year, data=test, FUN=mean),type='b')
 
