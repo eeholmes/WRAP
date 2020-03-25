@@ -1,6 +1,6 @@
 # WRAP_Location_CaseStudy Package
 
-To install
+## To install
 ```
 library(devtools)
 install_github("eeholmes/WRAP", dependencies=TRUE)
@@ -10,10 +10,19 @@ To see how it works
 ```
 library(WRAP)
 ?SimulateWorld
-SimulateWorld()
+data <- SimulateWorld()
 ```
 
-How packages work (simplified):
+## Data
+
+To run the simulations using ROMS data, you need the ROMS data. It is assumed that you have these data in a folder called "Rasters_2d_monthly" in your working directory. That can be changed. See ?SimulateWorld_ROMS.
+
+```
+?SimulateWorld_ROMS
+test <- SimulateWorld_ROMS()
+```
+
+## How packages work (simplified):
 
 * Code (functions) are in R folder
 * DESCRIPTION file says what libraries are used. When people install, the packages (dependencies) can be automatically installed too.
