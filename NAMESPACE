@@ -1,0 +1,9 @@
+## export functions
+export(
+  SimulateWorld
+)
+
+## Imports
+# These you want available to users
+# All the functions will be available to the functions inside the package
+import(virtualspecies)
