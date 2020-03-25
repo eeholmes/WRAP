@@ -3,7 +3,13 @@
 To install
 ```
 library(devtools)
-install_github("eeholmes/WRAP")
+install_github(eeholmes/WRAP)
+```
+
+To see how it works
+```
+library(WRAP)
+?SimulateWorld
 ```
 
 To build
