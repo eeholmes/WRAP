@@ -2,3 +2,4 @@
 
 export(SimulateWorld)
 export(SimulateWorld_ROMS)
+export(SimulateWorld_ROMS_TrophicInteraction)

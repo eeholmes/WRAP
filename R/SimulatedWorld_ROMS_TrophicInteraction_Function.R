@@ -1,23 +1,38 @@
-#This code replicates SimulatedWorld_ROMS_function, but adds in a trophic interaction, where:
-#Species A: distribution and abundance drivn by SST and Chl-a
-#Species B: distribution and abundance drivn by SST and Species A
-#EM for Species b: only have chl-a and temp as covariates. 
-
-#Note only using GFDL for now
-
-SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape, abund_enviro, dir){
-  # # 'PA_shape' specifies how enviro suitability determines species presence-absence...
-  # #... takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
-  # # 'abund_enviro' specifies abundance if present, can be "lnorm_low" (SB original)...
-  # #... "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
-  # # 'dir' points to your directory where ROMS raster are kept
-  library(virtualspecies)
-  library(scales)
-  library(raster)
-  library(glmmfields)
-  
-  #----IMPORTANT----
-  #Download ROMS data from here: https://www.dropbox.com/sh/aaezimxwq3glwdy/AABHmZbmfjVJM7R4jcHCi4c9a?dl=0
+#' Simulated World ROMS Trophic Interactions
+#' 
+#' This code replicates SimulatedWorld_ROMS_function, but adds in a trophic interaction, where:
+##' \itemize{
+##'  \item Species A: distribution and abundance driven by SST and Chl-a
+##'  \item Species B: distribution and abundance drivn by SST and Species A
+##'  \item EM for Species b: only have chl-a and temp as covariates. 
+#' }
+#' Note only using GFDL for now
+#' 
+#' The ROMS data are assumed to be in the working directory in a folder called
+#'  'Rasters_2d_monthly/gfdl/sst_monthly'. If the ROMS data folder is different,
+#'   you can pass that in via the 'dir' argument. However the ROMS data folder
+#'    must have subfolders 'gfdl/sst_monthly' so that 
+#'    'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.
+#'    
+#' 
+#' @param PA_shape specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
+#' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
+#' @param dir 
+#' 
+#' @examples
+#' test <- SimulateWorld_ROMS_TrophicInteraction(PA_shape="logistic", abund_enviro="lnorm_low")
+#' 
+#' @export
+#' 
+SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape=c("logistic", "logistic_prev", "linear"), abund_enviro=c("lnorm_low", "lnorm_high", "poisson"), dir=file.path(here::here(),"Rasters_2d_monthly")){
+  PA_shape <- match.arg(PA_shape)
+  abund_enviro <- match.arg(abund_enviro)
+  if(!dir.exists(dir))
+    stop(paste("This function requires that dir points to the ROMSdata.\nCurrently dir is pointing to", dir, "\n"))
+  # Within dir, the sst data are here 
+  # Use file.path not paste0 to create platform specific file paths
+  sst_dr <- file.path(dir, "gfdl", "sst_monthly")
+  chl_dr <- file.path(dir, "gfdl", "chl_surface")
   
   # #----Create output file----
   #####Needs to be modified as variables are added. Starting with sst
@@ -26,10 +41,10 @@ SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape, abund_enviro, dir){
   colnames(output) <- c("lon","lat","year","pres","suitability","sst", "chla")
 
     #----Load in rasters----
-  gcm_dr <- 'gfdl'
-
-  files_sst <- list.files(paste0(dir,'gfdl/sst_monthly'), full.names = TRUE, pattern=".grd") #should be 1452 files
-  files_chl <- list.files(paste0(dir,'gfdl/chl_surface'), full.names = TRUE, pattern=".grd") #should be 1452 files
+  # sst_dr and chl_dr were created at top
+  
+  files_sst <- list.files(sst_dr, full.names = TRUE, pattern=".grd") #should be 1452 files
+  files_chl <- list.files(chl_dr, full.names = TRUE, pattern=".grd") #should be 1452 files
   months <- rep(1:12,121) 
   years <- rep(1980:2100,each=12)
   august_indexes <- which(months==8) #picking last month in summer
@@ -48,12 +63,16 @@ SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape, abund_enviro, dir){
     #Species A: likes high chla and medium temps
     
     #Stack rasters
-    spA_stack <- stack(sst, chla)
+    spA_stack <- raster::stack(sst, chla)
     names(spA_stack) <- c('sst', 'chla')
     #Assign preferences
-    spA_parameters <- formatFunctions(sst = c(fun="dnorm",mean=12,sd=3),
-                                                  chla = c(fun="dnorm",mean=1.6,sd=9))
-    spA_suitability <- generateSpFromFun(spA_stack,parameters=spA_parameters, rescale = FALSE,rescale.each.response = FALSE) #Important: make sure rescaling is false. Doesn't work well in the 'for' loop. 
+    spA_parameters <- virtualspecies::formatFunctions(
+      sst = c(fun="dnorm", mean=12, sd=3),
+      chla = c(fun="dnorm",mean=1.6,sd=9))
+    spA_suitability <- virtualspecies::generateSpFromFun(
+      spA_stack,parameters=spA_parameters, 
+      rescale = FALSE,
+      rescale.each.response = FALSE) #Important: make sure rescaling is false. Doesn't work well in the 'for' loop. 
     # plot(spA_suitability$suitab.raster) #plot habitat suitability
     # virtualspecies::plotResponse(spA_suitability) #plot response curves
     
@@ -70,13 +89,18 @@ SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape, abund_enviro, dir){
     #Species B: likes to eat Species A, and warmer temperatues
     
     #Stack rasters
-    spB_stack <- stack(sst, spA_suitability$suitab.raster)
+    spB_stack <- raster::stack(sst, spA_suitability$suitab.raster)
     names(spB_stack) <- c('sst', 'spA')
     
     #Assign preferences
-    spB_parameters <- formatFunctions(sst = c(fun="dnorm",mean=15,sd=4),
-                                      spA = c(fun="dnorm",mean=0.8,sd=1))
-    spB_suitability <- generateSpFromFun(spB_stack,parameters=spB_parameters, rescale = FALSE,rescale.each.response = FALSE)
+    spB_parameters <- virtualspecies::formatFunctions(
+      sst = c(fun="dnorm",mean=15,sd=4),
+      spA = c(fun="dnorm",mean=0.8,sd=1))
+    spB_suitability <- virtualspecies::generateSpFromFun(
+      spB_stack,
+      parameters=spB_parameters, 
+      rescale = FALSE,
+      rescale.each.response = FALSE)
     # plot(spB_suitability$suitab.raster) #plot habitat suitability
     # virtualspecies::plotResponse(spB_suitability) #plot response curves
     
@@ -91,28 +115,44 @@ SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape, abund_enviro, dir){
     #----Convert suitability to Presence-Absence----
     if (PA_shape == "logistic") {
       #SB: specifies alpha and beta of logistic - creates almost knife-edge absence -> presence
-      suitability_PA <- virtualspecies::convertToPA(spB_suitability, PA.method = "probability", beta = 0.5,
-                                                    alpha = -0.05, species.prevalence = NULL, plot = FALSE, )
+      suitability_PA <- virtualspecies::convertToPA(
+        spB_suitability, 
+        PA.method = "probability", 
+        beta = 0.5, alpha = -0.05, 
+        species.prevalence = NULL, 
+        plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "logistic_prev") {
       #JS: relaxes logistic a little bit, by specifing reduced prevalence and fitting beta (test diff prevalence values, but 0.5 seems realistic)
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability", beta = "random",
-                                                    alpha = -0.3, species.prevalence = 0.5, plot = FALSE)
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, 
+        PA.method = "probability", 
+        beta = "random", alpha = -0.3, 
+        species.prevalence = 0.5, plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "linear") {
       #JS: relaxes knife-edge absence -> presence further; also specifies prevalence and fits 'b'
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability",
-                                                    prob.method = "linear", a = NULL,
-                                                    b = NULL, species.prevalence = 0.8, plot = FALSE)
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, 
+        PA.method = "probability",
+        prob.method = "linear", 
+        a = NULL, b = NULL, 
+        species.prevalence = 0.8, 
+        plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     # plot(suitability_PA$pa.raster)
     
     #-----Sample Presences and Absences-----
-    presence.points <- sampleOccurrences(suitability_PA,n = 400,type = "presence-absence", 
-                                         detection.probability = 1,error.probability=0, plot = FALSE) #default but cool options to play with                                    )
+    presence.points <- virtualspecies::sampleOccurrences(
+      suitability_PA,
+      n = 400,
+      type = "presence-absence",
+      detection.probability = 1,
+      error.probability=0, 
+      plot = FALSE)
     df <- cbind(as.data.frame(round(presence.points$sample.points$x,1)),as.data.frame(round(presence.points$sample.points$y,1)))
     colnames(df) <- c("x","y")
     
@@ -148,7 +188,3 @@ SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape, abund_enviro, dir){
   
   return(output)
 }
-
-
-#Example-
-# test <- SimulateWorld_ROMS_multispecies(PA_shape="logisitic", abund_enviro="lnorm_low", dir <- "~/Dropbox/WRAP Location^3/Rasters_2d_monthly/")

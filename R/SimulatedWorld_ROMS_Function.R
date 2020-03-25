@@ -3,11 +3,12 @@
 #' Function uses temperature data from ROMS to generate species distribution and abundance.
 #' 
 #' The ROMS data are assumed to be in the working directory in a folder called 'Rasters_2d_monthly/gfdl/sst_monthly'. If the ROMS data folder is different, you can pass that in via the 'dir' argument. However the ROMS data folder must have subfolders 'gfdl/sst_monthly' so that 'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.
+#' Download ROMS data from here: https://www.dropbox.com/sh/aaezimxwq3glwdy/AABHmZbmfjVJM7R4jcHCi4c9a?dl=0
 #' Caution: this function uses the downscaled GCMs to simulate species distrubtion. It has slight differences to the other SimulatedWorld_function that 'randomly' generates environmental data. Remember: 1980-2010 are not observed data (by design)
 #' 
 #' @param PA_shape specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
 #' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
-#' @param dir 
+#' @param dir (optional) The path to the directory where the folder 'gfdl' is.
 #' 
 #' @examples
 #' test <- SimulateWorld_ROMS(PA_shape="logistic", abund_enviro="lnorm_low")
