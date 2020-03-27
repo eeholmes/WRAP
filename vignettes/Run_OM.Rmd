@@ -1,0 +1,83 @@
+---
+title: "Run OM Model"
+author: "E Holmes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{OM_Model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The simulation functions are
+
+* `SimulateWorld()` Use `?SimulateWorld` to read documentation
+* `SimulateWorld_ROMS()`
+* `SimulateWorld_ROMS_TrophicInteraction()`
+
+## Run simulation
+
+First load the **WRAP** library.
+
+```{r message=FALSE, warning=FALSE}
+library(WRAP)
+```
+
+```{r run_sim_1, message=FALSE}
+sim <- SimulateWorld()
+```
+
+`sim` (the output from a simulation function) is class "OM" and is a list. It has the simulated grid in `grid` and information about the simulation in `meta`. Typing the name of the output will print basic information about the simulation.
+
+```{r print_sim}
+sim
+```
+
+## Plot
+
+Plot time-series of total catch in observed years
+
+```{r plot_obs}
+data <- sim$grid
+plot(aggregate(abundance~year,data[data$year<=2010,], FUN="sum"),type="l",ylab="Abundance")
+```
+
+plot time-series of total catch in forecast years
+
+```{r plot_fore}
+data <- sim$grid
+plot(aggregate(abundance~year,data[data$year>2010,], FUN="sum"),type="l", ylab="Abundance")
+```
+
+## Plot the abundance
+
+```{r plot_grid_2001, fig.height=2, fig.width=2, warning=FALSE}
+library(raster)
+df <- subset(sim$grid, year==2001)
+df <- df[, c("lon", "lat", "abundance")]
+dfr <- raster::rasterFromXYZ(df)      
+plot(dfr)
+```
+
+Show 4 years and remove the box and legend.
+ 
+```{r plot_grid_4, fig.height=6, fig.width=6, warning=FALSE}
+library(raster)
+par(mfrow=c(2,2), mar=c(2,2,2,2))
+for(yr in c(2001, 2025, 2050, 2100)){
+df <- subset(sim$grid, year==yr)
+df <- df[, c("lon", "lat", "abundance")]
+dfr <- raster::rasterFromXYZ(df)      
+plot(dfr, axes=FALSE, box=FALSE, legend=FALSE)
+title(yr)
+}
+```
+
+

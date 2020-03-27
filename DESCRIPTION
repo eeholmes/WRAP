@@ -16,13 +16,15 @@ Depends:
   viridis,
   BBmisc,
   neuralnet,
-  here
+  here,
+  stringr
+Suggests: knitr, rmarkdown
 Imports: Rdpack
 Author: Stephanie
 Description: WRAP project
 License: GPL-2
 LazyData: yes
-BuildVignettes: yes
+BuildVignettes: no
 ByteCompile: TRUE
 RdMacros: Rdpack
 VignetteBuilder: knitr
