@@ -1,11 +1,15 @@
 #' Simulated World basic
 #' 
-#' Function to simulate species distribution and abundance with respect to environmental covariates.
+#' Function to simulate species distribution and abundance with a linearly increasing temperature. The argument temp_diff specifies the range of temperature for the beginning and ending years (year 1 and year 100).
 #' 
 #' @param temp_diff specifies min and max temps at year 1 and year 100 (e.g. temp_diff=c(1,3,5,7) means year 1 varies from 1-3C and year 100 from 5-7C)
 #' @param temp_spatial specifies whether we have "simple" linear temp distbn (SB) or added "matern" variation (EW)
 #' @param PA_shape specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences, currently throws errors)
 #' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
+#' @param covariates Currently only "sst" is allowed in this function
+#' @param grid.size Default is a 20x20 grid
+#' @param n.year Number of years to simulate. Default is 100.
+#' @param start.year For showing results choose the start year.
 #' 
 #' @examples
 #' # use defaults
@@ -20,21 +24,29 @@ SimulateWorld <- function(
   temp_diff=c(1,3,5,7), 
   temp_spatial=c("simple", "matern"), 
   PA_shape=c("logistic", "logistic_prev", "linear"), 
-  abund_enviro=c("lnorm_low", "lnorm_high", "poisson")){
+  abund_enviro=c("lnorm_low", "lnorm_high", "poisson"),
+  covariates=c("sst"),
+  grid.size=20, n.year=100, start.year=2000){
   
   temp_spatial <- match.arg(temp_spatial)
   PA_shape <- match.arg(PA_shape)
   abund_enviro <- match.arg(abund_enviro)
+  covariates <- match.arg(covariates, several.ok=TRUE)
+  # save all the inputs for meta data
+  fun.args <- as.list(environment())
+  # Record the seed used for simulation
+  sim.seed <- .Random.seed
+  
 
     #----Generate grid of locations through time----
-  x_tot <- seq(1, 20, 1)
-  y_tot <- seq(1, 20, 1)
-  expand <- expand.grid(x = x_tot, y = y_tot)
-  grid <- as.data.frame(cbind(x = rep(expand$x,100),y = rep(expand$y,100),year = rep(1:100,each=400)))
-  years <- seq(1,100,1) #this includes both observed (20 years) and forecast years (80 years)
+  x_tot <- seq(1, grid.size, 1)
+  y_tot <- seq(1, grid.size, 1)
+  expand <- expand.grid(lon = x_tot, lat = y_tot)
+  grid <- as.data.frame(cbind(lon = rep(expand$lon, n.year), lat = rep(expand$lat, n.year),year = rep(1:n.year,each=grid.size^2)))
+  years <- seq(1,n.year,1) #this includes both observed (n.fit) and forecast years (n.fore)
   
-  temp_max_slope <- (temp_diff[4] - temp_diff[2])/100  # linear slope over 100 years
-  temp_min_slope <- (temp_diff[3] - temp_diff[1])/100
+  temp_max_slope <- (temp_diff[4] - temp_diff[2])/n.year  # linear slope over 100 years
+  temp_min_slope <- (temp_diff[3] - temp_diff[1])/n.year
   temp_max_int <-  temp_diff[2] - temp_max_slope
   temp_min_int <- temp_diff[1] - temp_min_slope
   
@@ -43,8 +55,8 @@ SimulateWorld <- function(
     print(paste0("Creating environmental simulation for Year ",y))
     
     #----Generate Temperature Covariate----
-    temp_plain <- raster(ncol=20,nrow=20)
-    ex <- extent(0.5,20.5,0.5,20.5)
+    temp_plain <- raster(ncol=grid.size,nrow=grid.size)
+    ex <- extent(0.5,0.5+grid.size,0.5,0.5+grid.size)
     extent(temp_plain) <- ex
     xy <- coordinates(temp_plain)
     min <- temp_min_slope*y + temp_min_int 
@@ -52,7 +64,7 @@ SimulateWorld <- function(
     
     #----Decide on spatial distribution of temperature----
     if (temp_spatial=="simple"){
-      temp_plain[] <- seq(min,max,length.out=400) # assign values to RasterLayer
+      temp_plain[] <- seq(min,max,length.out=grid.size^2) # assign values to RasterLayer
       temp <- raster::calc (temp_plain, fun = function(x) jitter(x,amount=1))
     }
     
@@ -61,12 +73,13 @@ SimulateWorld <- function(
       # (1) letting matern parameters vary over time, (2) letting latitude 
       # gradient vary over time, and (3) making the field simulation be non-independent
       # across years. Right now this generates an independent field by year
-      sim_field = glmmfields::sim_glmmfields(n_knots = 40,
-                                             n_draws=1, covariance="matern",
-                                             g = data.frame(lon=xy[,1],lat=xy[,2]), 
-                                             n_data_points=nrow(xy),
-                                             B = c(0,-0.05), #making second parameter negative to invert data, and slightly higher (from 0.1) to have better latitudinal siganl 
-                                             X = cbind(1,xy[,2]))
+      sim_field = glmmfields::sim_glmmfields(
+        n_knots = 40,
+        n_draws=1, covariance="matern",
+        g = data.frame(lon=xy[,1],lat=xy[,2]),
+        n_data_points=nrow(xy),
+        B = c(0,-0.05), #making second parameter negative to invert data, and slightly higher (from 0.1) to have better latitudinal siganl
+        X = cbind(1,xy[,2]))
       sim_field$dat$new_y = (sim_field$dat$y + abs(min(sim_field$dat$y)))
       # make these compatible with previous range
       temp_plain[] = min + (max-min)*sim_field$dat$new_y / max(sim_field$dat$new_y)
@@ -94,33 +107,42 @@ SimulateWorld <- function(
     #----Convert suitability to Presence-Absence----
     if (PA_shape == "logistic") {
       #SB: specifies alpha and beta of logistic - creates almost knife-edge absence -> presence
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability", beta = 0.5,
-                                                    alpha = -0.05, species.prevalence = NULL, plot = FALSE)
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, 
+        PA.method = "probability", 
+        beta = 0.5, alpha = -0.05, 
+        species.prevalence = NULL, plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "logistic_prev") {
       #JS: relaxes logistic a little bit, by specifing reduced prevalence and fitting beta (test diff prevalence values, but 0.5 seems realistic)
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability", beta = "random",
-                                                    alpha = -0.3, species.prevalence = 0.5, plot = FALSE)
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, 
+        PA.method = "probability", 
+        beta = "random", alpha = -0.3,
+        species.prevalence = 0.5, plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "linear") {
       #JS: relaxes knife-edge absence -> presence further; also specifies prevalence and fits 'b'
-      suitability_PA <- virtualspecies::convertToPA(envirosuitability, PA.method = "probability",
-                                                    prob.method = "linear", a = NULL,
-                                                    b = NULL, species.prevalence = 0.8, plot = FALSE)
+      suitability_PA <- virtualspecies::convertToPA(
+        envirosuitability, PA.method = "probability",
+        prob.method = "linear",
+        a = NULL, b = NULL,
+        species.prevalence = 0.8,
+        plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     # plot(suitability_PA$pa.raster)
     
     #----Extract suitability for each location----
     print("Extracting suitability")
-    for (i in 1:400){
+    for (i in 1:grid.size^2){
       start_index <- min(which(grid$year==y))
       ii = (i + start_index) -1
-      s <- raster::extract(envirosuitability$suitab.raster,grid[ii,1:2]) 
-      pa <- raster::extract(suitability_PA$pa.raster,grid[ii,1:2])
-      t <- raster::extract(temp,grid[ii,1:2]) 
+      s <- raster::extract(envirosuitability$suitab.raster,grid[ii,c("lon","lat")]) 
+      pa <- raster::extract(suitability_PA$pa.raster,grid[ii,c("lon","lat")])
+      t <- raster::extract(temp,grid[ii,c("lon","lat")]) 
       grid$suitability[ii] <-  s
       grid$pres[ii] <-  pa
       grid$temp[ii] <-  t
@@ -144,14 +166,32 @@ SimulateWorld <- function(
     grid$abundance <- ifelse(grid$pres==1,rpois(nrow(grid),lambda=grid$suitability*maxN),0)
   } 
  
-  grid$year <- ifelse(grid$year<=20,grid$year + 2000, grid$year + 2000) #give years meaning: observed years 2000-2020, forecast years 2021-2100.
+  #give years meaning (instead of 1:n.year)
+  grid$year <- grid$year + start.year
+  #grid$year <- ifelse(grid$year<=n.fit, grid$year + start.year, grid$year + start.year) 
   
-  meta=list(func="SimulateWorld", temp_diff=temp_diff, 
-            temp_spatial=temp_spatial,
-            PA_shape=PA_shape, 
-            abund_enviro=abund_enviro)
+  # The meta data is auto generated. You should not need to edit
+  meta=list(
+    version=packageVersion("WRAP"),
+    func=deparse(as.list(match.call())[[1]]),
+    call=deparse( sys.call() ),
+    sim.seed=sim.seed,
+    grid.dimensions=c(grid.size, grid.size, grid.size^2),
+    grid.resolution=c(1, 1),
+    grid.extent=c(1, grid.size, 1, grid.size),
+    grid.crs="simulated data on a grid",
+    grid.unit="not applicable",
+    time=c(min(grid$year), max(grid$year)),
+    time.unit="year"
+  )
+  meta <- c(meta, fun.args) #add the function arguments
   
-  return(list(meta=meta, grid=grid))
+  
+  obj <- list(meta=meta, grid=grid)
+  
+  class(obj) <- "OM"
+  
+  return(obj)
   
 }
 

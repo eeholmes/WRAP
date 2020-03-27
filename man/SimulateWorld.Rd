@@ -8,7 +8,11 @@ SimulateWorld(
   temp_diff = c(1, 3, 5, 7),
   temp_spatial = c("simple", "matern"),
   PA_shape = c("logistic", "logistic_prev", "linear"),
-  abund_enviro = c("lnorm_low", "lnorm_high", "poisson")
+  abund_enviro = c("lnorm_low", "lnorm_high", "poisson"),
+  covariates = c("sst"),
+  grid.size = 20,
+  n.year = 100,
+  start.year = 2000
 )
 }
 \arguments{
@@ -19,13 +23,21 @@ SimulateWorld(
 \item{PA_shape}{specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences, currently throws errors)}
 
 \item{abund_enviro}{specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)}
+
+\item{covariates}{Currently only "sst" is allowed in this function}
+
+\item{grid.size}{Default is a 20x20 grid}
+
+\item{n.year}{Number of years to simulate. Default is 100.}
+
+\item{start.year}{For showing results choose the start year.}
 }
 \description{
-Function to simulate species distribution and abundance with respect to environmental covariates.
+Function to simulate species distribution and abundance with a linearly increasing temperature. The argument temp_diff specifies the range of temperature for the beginning and ending years (year 1 and year 100).
 }
 \examples{
 # use defaults
-data <- SimulateWorld()
+data <- SimulateWorld()$grid
 # plot time-series of total catch in observed years
 plot(aggregate(abundance~year,data[data$year<=2010,], FUN="sum"),type="l",ylab="Abundance")
 # plot time-series of total catch in forecast years

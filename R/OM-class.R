@@ -1,0 +1,33 @@
+#' OM class
+#' 
+#' This is the format for all output for the OM functions. The output is a list with
+#' 
+#' \strong{meta} A list with elements that describe the model used.
+#' \itemize{
+#' \item version: Version of WRAP package used.
+#' \item func: Name of function that produced the grid.
+#' \item call: Exact call used to run model.
+#' \item description: Description of the function
+#' \item sim.seed: The random seed used for the simulation to replicate the results .Random.seed <- sim.seed before rerunning the OM function. 
+#' \item entries for all the arguments to the function (function dependent)
+#' \item covariates: The covariates included in the model.
+#' \item grid: c(min lon, max lon, min lat, max lat, grid). grid is in degree lat/lon. For example a 1 deg grid would be entered as 1 and grid.unit as "degree".
+#' \item grid.unit Eg. "degree" Add units for clarity. NA if grid is simulated for example a 20x20 grid.
+#' \item time: c(start date, end date). For example  c(2001, 2101)
+#' \item time.unit = "year" for yearly. 
+#' }
+#' \strong{grid} A data frame with a row for each grid square. The data frame has the following columns. Other columns can be added but at minimum the following are provided:
+#' \itemize{
+#' \item lat
+#' \item lon
+#' \item year
+#' \item pres Presence/absence as 0/1
+#' \item suitability
+#' \item columns for the covariates (one column for each)
+#' \item covariates: The covariates included in the model. The number of covariates will vary by model.
+#' \item abundance
+#' }
+#' 
+#' @docType class
+#' @name OMclass
+NULL

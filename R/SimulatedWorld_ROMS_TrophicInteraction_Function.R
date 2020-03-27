@@ -29,10 +29,16 @@ SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape=c("logistic", "logist
   abund_enviro <- match.arg(abund_enviro)
   if(!dir.exists(dir))
     stop(paste("This function requires that dir points to the ROMSdata.\nCurrently dir is pointing to", dir, "\n"))
+  # save all the inputs for meta data
+  fun.args <- as.list(environment())
+  
   # Within dir, the sst data are here 
   # Use file.path not paste0 to create platform specific file paths
   sst_dr <- file.path(dir, "gfdl", "sst_monthly")
   chl_dr <- file.path(dir, "gfdl", "chl_surface")
+  
+  # Record the seed used for simulation
+  sim.seed <- .Random.seed
   
   # #----Create output file----
   #####Needs to be modified as variables are added. Starting with sst
@@ -186,5 +192,26 @@ SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape=c("logistic", "logist
     output$abundance <- ifelse(output$pres==1,rpois(nrow(output),lambda=output$suitability*maxN),0)
   } 
   
-  return(output)
+  # meta data is auto generated. You shouldn't need to edit
+  meta=list(
+    version=packageVersion("WRAP"),
+    func=deparse(as.list(match.call())[[1]]),
+    call=deparse( sys.call() ),
+    sim.seed=sim.seed,
+    grid.dimensions=c(attr(sst, "nrows"), attr(sst, "ncols"), attr(sst, "nrows")*attr(sst, "ncols")),
+    grid.resolution=c((attr(sst, "extent")@xmax-attr(sst, "extent")@xmin)/attr(sst, "ncols"), (attr(sst, "extent")@ymax-attr(sst, "extent")@ymin)/attr(sst, "nrows")),
+    grid.extent=c(attr(sst, "extent")@xmin, attr(sst, "extent")@xmax, attr(sst, "extent")@ymin, attr(sst, "extent")@ymax),
+    grid.crs=attr(sst, "crs"),
+    grid.unit="degree",
+    time=c(min(output$year), max(output$year)),
+    time.unit="year"
+  )
+  meta <- c(meta, fun.args) #add the function arguments
+  meta$dir <- c(sst_dr, chl_dr) #update dir to full sst dir  
+  
+  obj <- list(meta=meta, grid=output)
+  
+  class(obj) <- "OM"
+  
+  return(obj)
 }

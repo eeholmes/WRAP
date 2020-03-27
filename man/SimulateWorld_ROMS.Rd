@@ -2,12 +2,15 @@
 % Please edit documentation in R/SimulatedWorld_ROMS_Function.R
 \name{SimulateWorld_ROMS}
 \alias{SimulateWorld_ROMS}
-\title{Simulated World ROMS temperature}
+\title{Simulated World ROMS}
 \usage{
 SimulateWorld_ROMS(
   PA_shape = c("logistic", "logistic_prev", "linear"),
   abund_enviro = c("lnorm_low", "lnorm_high", "poisson"),
-  dir = file.path(here::here(), "Rasters_2d_monthly")
+  covariates = c("sst"),
+  dir = file.path(here::here(), "Rasters_2d_monthly"),
+  roms.years = 1980:2100,
+  n.samples = 400
 )
 }
 \arguments{
@@ -15,13 +18,19 @@ SimulateWorld_ROMS(
 
 \item{abund_enviro}{specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)}
 
+\item{covariates}{A vector with "sst" and/or "chla". One or both can be listed.}
+
 \item{dir}{(optional) The path to the directory where the folder 'gfdl' is.}
+
+\item{roms.years}{The years for the ROMS data. The data files use the year and month. Default is 1980:2100.}
+
+\item{n.samples}{The number of samples to take from the ROMS layers each year. Default is 400.}
 }
 \description{
-Function uses temperature data from ROMS to generate species distribution and abundance.
+Function uses covariate data from ROMS to generate species distribution and abundance.
 }
 \details{
-The ROMS data are assumed to be in the working directory in a folder called 'Rasters_2d_monthly/gfdl/sst_monthly'. If the ROMS data folder is different, you can pass that in via the 'dir' argument. However the ROMS data folder must have subfolders 'gfdl/sst_monthly' so that 'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.
+The ROMS data are assumed to be in the working directory in a folder called 'Rasters_2d_monthly/gfdl/'. SST data are in a subfolder called 'sst_monthly'. If the ROMS data folder is different, you can pass that in via the 'dir' argument. However the ROMS data folder must have subfolders 'gfdl/sst_monthly' so that 'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.
 Download ROMS data from here: https://www.dropbox.com/sh/aaezimxwq3glwdy/AABHmZbmfjVJM7R4jcHCi4c9a?dl=0
 Caution: this function uses the downscaled GCMs to simulate species distrubtion. It has slight differences to the other SimulatedWorld_function that 'randomly' generates environmental data. Remember: 1980-2010 are not observed data (by design)
 }
@@ -30,7 +39,7 @@ test <- SimulateWorld_ROMS(PA_shape="logistic", abund_enviro="lnorm_low")
 head(test)
 tail(test)
 plot(aggregate(suitability~year, data=test, FUN=mean),type='b')
-plot(aggregate(presabs~year, data=test, FUN=sum),type='b')
+plot(aggregate(pres~year, data=test, FUN=sum),type='b')
 plot(aggregate(abundance~year, data=test, FUN=sum),type='b')
 plot(aggregate(sst~year, data=test, FUN=mean),type='b')
 
