@@ -7,6 +7,7 @@
 
 # Data folder if user happened to put it in the package
 Rasters_2d_monthly
+Sim1
 
 # Example code in package build process
 *-Ex.R
@@ -31,6 +32,8 @@ vignettes/*.pdf
 # knitr and R markdown default cache directories
 /*_cache/
 /cache/
+vignettes/*_cache
+vignettes/Not_ready
 
 # Temporary files created by R markdown
 *.utf8.md
