@@ -2,9 +2,9 @@
 #'
 #' Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.
 #'
-#' @param x (required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR just the grid from the operating model (\code{sim$grid}).
-#' @param covariates (required) covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid).
-#' @param start.forecast.year The years equal or less will be used for fitting and the years greater than are the forecasted years.
+#' @param x (required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).
+#' @param covariates Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.
+#' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years.
 #'
 #' @examples
 #' sim <- SimulateWorld()
@@ -14,22 +14,23 @@
 #' plot(dat$temp, dat$mlpAbun)
 #' 
 #' @export
-mlp_sdm <- function(x, covariates,
+mlp_sdm <- function(x, covariates=NULL,
                     response=c("pres", "abundance"),
-                    start.forecast.year=2020){
-  # Allow the user to just pass in a grid or an OM object
-  if(inherits(x, "OM")) x <- x$grid
-  if(!inherits(x, "data.frame")) stop("Something is wrong. x should be a data.frame or a OM (operating model) object.")
+                    start.forecast.year=2021){
+
+  if(!inherits(x, "OM") & !all(c("meta", "grid") %in% names(x))) stop("Something is wrong. x should be a OM (operating model) object or a list with meta and grid.")
+  if(!(c("abund_enviro") %in% names(x$meta))) stop("Something is wrong. x$meta needs 'abund_enviro' value.")
+  abund_enviro <- x$meta$abund_enviro
+  if(missing(covariates)) covariates <- x$meta$covariates
   
   resp <- match.arg(response)
-  if(!all(covariates %in% colnames(x))) stop("The operating model does not have all the covariates specified.")
+  if(!all(covariates %in% colnames(x$grid))) stop("The operating model does not have all the covariates specified.")
   
-  abund_enviro <- x$meta$abund_enviro
   
   # --- Data set-up section ----
   # The repsonse variable (pres or abundance) is put in new 'resp' column
   # If needed, resp is transformed (0s removed and logged or rounded)
-  dat <- x
+  dat <- x$grid
   # add a column with name resp to use in the fitting functions
   dat$resp <- dat[,resp]
   
@@ -46,8 +47,8 @@ mlp_sdm <- function(x, covariates,
   for(i in covariates) dat[,i] <- BBmisc::normalize(dat[,i])
   
   #Create dataframe with historical/forecast data
-  dat_hist <- dat[dat$year<=start.forecast.year,]
-  dat_fcast <- dat[dat$year>start.forecast.year,]
+  dat_hist  <- dat[dat$year < start.forecast.year,]
+  dat_fcast <- dat[dat$year>=start.forecast.year,]
   
   # --- Model fitting section ----
   # The response is in the resp column and has been transformed (if needed) already
@@ -75,6 +76,8 @@ mlp_sdm <- function(x, covariates,
                                 algorithm = "rprop+", 
                                 threshold = 0.2)
   }
+  
+  class(fit) <- c(class(fit), "mlp")
   
   return(fit)
 }
