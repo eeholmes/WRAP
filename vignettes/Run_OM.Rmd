@@ -11,8 +11,11 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+  cache = TRUE,
+  fig.width=6,
+  fig.height=6,
+  message=FALSE,
+  collapse=TRUE
 )
 ```
 
@@ -24,13 +27,24 @@ The simulation functions are
 
 ## Run simulation
 
+### Use `SimulateWorld()`
+
 First load the **WRAP** library.
 
 ```{r message=FALSE, warning=FALSE}
 library(WRAP)
 ```
 
-```{r run_sim_1, message=FALSE}
+This function simulates presence and abundance using a simulated temperature field.  Parameters for the function are 
+
+* `abund_enviro` can be "lnorm_low" (SB); "lnorm_high" (EW); or "poisson" (JS).
+* `PA_shape` can be "logistic" (SB); "logistic_prev","linear" (JS)
+* `temp_spatial` can be "simple" (SB); or "matern" (EW)
+* `temp_diff` is only for the simulated temperature. It specifies min and max temps at year 1 and year 100 (e.g. temp_diff=c(1,3,5,7) means year 1 varies from 1-3C and year 100 from 5-7C). 
+
+The defaults are  `temp_diff = c(1, 3, 5, 7)`, `temp_spatial = "simple"`, `PA_shape = "logistic"`, and `abund_enviro = "lnorm_low"`.  You can also set number of years, grid size, and start year.
+
+```{r run_sim_1, message=FALSE, results='hide'}
 sim <- SimulateWorld()
 ```
 
@@ -40,13 +54,32 @@ sim <- SimulateWorld()
 sim
 ```
 
+### Saving the simulation
+
+### Save data
+
+Since simulations take a long time to run, you may want to create a directory in your working directory for the simulations and save them there. Then you can reload the simulations instead of re-running.
+
+Create a directory for the simulations:
+
+```{r, eval=FALSE}
+if(!dir.exists(file.path(here::here(), 'Sim1')))
+  dir.create(file.path(here::here(), 'Sim1'))
+```
+
+Save the simulation.
+
+```{r, eval=FALSE}
+saveRDS(sim, file=file.path(here::here(), "Sim1", "Sim.rds"))
+```
+
 ## Plot
 
 Plot time-series of total catch in observed years
 
 ```{r plot_obs}
 data <- sim$grid
-plot(aggregate(abundance~year,data[data$year<=2010,], FUN="sum"),type="l",ylab="Abundance")
+plot(aggregate(abundance~year, data[data$year<=2010,], FUN="sum"),type="l",ylab="Abundance")
 ```
 
 plot time-series of total catch in forecast years
@@ -58,7 +91,7 @@ plot(aggregate(abundance~year,data[data$year>2010,], FUN="sum"),type="l", ylab="
 
 ## Plot the abundance
 
-```{r plot_grid_2001, fig.height=2, fig.width=2, warning=FALSE}
+```{r plot_grid_2001, fig.height=4, fig.width=4, warning=FALSE}
 library(raster)
 df <- subset(sim$grid, year==2001)
 df <- df[, c("lon", "lat", "abundance")]
