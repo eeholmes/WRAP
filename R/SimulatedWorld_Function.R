@@ -6,10 +6,12 @@
 #' @param temp_spatial specifies whether we have "simple" linear temp distbn (SB) or added "matern" variation (EW)
 #' @param PA_shape specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences, currently throws errors)
 #' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
-#' @param covariates Currently only "sst" is allowed in this function
+#' @param covariates Currently only "temp" is allowed in this function
 #' @param grid.size Default is a 20x20 grid
 #' @param n.year Number of years to simulate. Default is 100.
 #' @param start.year For showing results choose the start year.
+#' @param response.curve The response curve passed to `virtualspecies::formatFunctions`. All covariates in `covariates` argument must have a response curve specified.
+
 #' 
 #' @examples
 #' # use defaults
@@ -25,13 +27,17 @@ SimulateWorld <- function(
   temp_spatial=c("simple", "matern"), 
   PA_shape=c("logistic", "logistic_prev", "linear"), 
   abund_enviro=c("lnorm_low", "lnorm_high", "poisson"),
-  covariates=c("sst"),
-  grid.size=20, n.year=100, start.year=2000){
+  covariates=c("temp"),
+  grid.size=20, n.year=100, start.year=2000,
+  response.curve=list(temp=c(fun="dnorm",mean=4,sd=1))){
   
   temp_spatial <- match.arg(temp_spatial)
   PA_shape <- match.arg(PA_shape)
   abund_enviro <- match.arg(abund_enviro)
   covariates <- match.arg(covariates, several.ok=TRUE)
+  
+  if(!all(covariates %in% names(response.curve)))
+    stop("All the covariates must have a response curve specified.")
   # save all the inputs for meta data
   fun.args <- as.list(environment())
   # Record the seed used for simulation
@@ -91,8 +97,8 @@ SimulateWorld <- function(
     envir_stack <- stack(temp) #must be in raster stack format
     names(envir_stack) <- c('temp')
     
-    #----assign response curve with mean at 4 degrees----
-    parameters <- virtualspecies::formatFunctions(temp = c(fun="dnorm",mean=4,sd=1))
+    #----assign response curve ----
+    parameters <- virtualspecies::formatFunctions(temp = response.curve$temp)
     
     #----convert temperature raster to species suitability----
     envirosuitability <- virtualspecies::generateSpFromFun(envir_stack,parameters=parameters, rescale = FALSE,rescale.each.response = FALSE)
