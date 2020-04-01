@@ -1,0 +1,67 @@
+destination: docs
+
+template:
+  params:
+    bootswatch: cosmo
+
+navbar:
+  title: "WRAP"
+  left:
+    - text: "Vignettes"
+      href: articles/index.html
+    - text: "Functions"
+      href: reference/index.html
+  right:
+   - icon: fa-github
+     href: https://github.com/eeholmes/WRAP
+
+home:
+  links:
+  - text: Browse source code
+    href: https://github.com/eeholmes/WRAP
+
+articles:
+  - title: "Getting Started"
+    desc: >
+      These vignettes provide an introduction to simulating presence/absence and 
+      abundance grids using environmental variables and fitting Species Distribution
+      Models using the **WRAP** package.
+      
+      Download the Rmd files from https://github.com/eeholmes/WRAP/vignettes
+    contents:
+      - Run_OM
+      - Fitting_SDMs
+
+reference:
+  - title: "Simulating"
+    desc: >
+      Functions for simulating presence/absence and 
+      abundance grids using environmental variables. These functions return an OM object.
+    contents:
+      - SimulateWorld
+      - SimulateWorld_ROMS
+      - SimulateWorld_ROMS_TrophicInteraction
+      - OMclass
+  - title: "Fitting"
+    desc: >
+      Functions for fitting SDMs using GAMs, Boosted Regression Trees (BRT), and Neural Nets (MLP). 
+      These functions take as input, a OM object as returned by the simulation functions above. The
+      OM object has information (in object$meta) about the simulation that is used in the fitting function.
+    contents:
+      - gam_sdm
+      - brt_sdm
+      - mlp_sdm
+  - title: "OM Methods"
+    desc: >
+      The simulation functions return an OM object (a list) with meta and grid. meta has information
+      on the simulation and grid is the simulated grid (as a data frame with lat lon). The following
+      methods are available in addition to the fitting functions above.
+    contents:
+      - predict.OM
+      - print.OM
+  - title: "Misc"
+    desc: >
+      Helper functions
+    contents:
+      - dev_eval
+

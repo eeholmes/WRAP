@@ -3,3 +3,6 @@
 Rasters_2d_monthly
 ^doc$
 ^Meta$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

@@ -61,10 +61,10 @@ SimulateWorld <- function(
     print(paste0("Creating environmental simulation for Year ",y))
     
     #----Generate Temperature Covariate----
-    temp_plain <- raster(ncol=grid.size,nrow=grid.size)
+    temp_plain <- raster::raster(ncol=grid.size,nrow=grid.size)
     ex <- extent(0.5,0.5+grid.size,0.5,0.5+grid.size)
     extent(temp_plain) <- ex
-    xy <- coordinates(temp_plain)
+    xy <- raster::coordinates(temp_plain)
     min <- temp_min_slope*y + temp_min_int 
     max <- temp_max_slope*y + temp_max_int
     

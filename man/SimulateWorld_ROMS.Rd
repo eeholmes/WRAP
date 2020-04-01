@@ -32,7 +32,7 @@ Function uses covariate data from ROMS to generate species distribution and abun
 \details{
 The ROMS data are assumed to be in the working directory in a folder called 'Rasters_2d_monthly/gfdl/'. SST data are in a subfolder called 'sst_monthly'. If the ROMS data folder is different, you can pass that in via the 'dir' argument. However the ROMS data folder must have subfolders 'gfdl/sst_monthly' so that 'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.
 Download ROMS data from here: https://www.dropbox.com/sh/aaezimxwq3glwdy/AABHmZbmfjVJM7R4jcHCi4c9a?dl=0
-Caution: this function uses the downscaled GCMs to simulate species distrubtion. It has slight differences to the other SimulatedWorld_function that 'randomly' generates environmental data. Remember: 1980-2010 are not observed data (by design)
+Caution: this function uses the downscaled GCMs to simulate species distrubtion. It has slight differences to the other SimulateWorld_function that 'randomly' generates environmental data. Remember: 1980-2010 are not observed data (by design)
 }
 \examples{
 test <- SimulateWorld_ROMS(PA_shape="logistic", abund_enviro="lnorm_low")

@@ -1,4 +1,4 @@
-# WRAP_Location_CaseStudy Package
+# WRAP Package
 
 ## To install
 ```
@@ -28,6 +28,7 @@ This will open a vignette in the help window.
 
 ```
 vignette("Run_OM", package="WRAP")
+
 vignette("Fitting_SDMs", package="WRAP")
 ```
 
@@ -110,5 +111,13 @@ And this will open a vignette in the help window.
 
 ```
 vignette("Run_OM", package="WRAP")
+```
+
+### pkgdown
+
+To build package website.
+
+```
+pkgdown::build_site(examples=FALSE)
 ```
 

@@ -1,5 +1,5 @@
 ---
-title: "Run OM Model"
+title: "Run Operating Model"
 author: "E Holmes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

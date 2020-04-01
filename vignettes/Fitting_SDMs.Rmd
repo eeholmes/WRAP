@@ -34,7 +34,7 @@ library(WRAP)
 
 ## Simulate data 
 
-There are three simulation functions that can be used. `SimulatedWorld_ROMS()` which uses ROMS for the environmental fields, `SimulateWorld_ROMS_TrophicInteractins()` which uses ROMS and trophic interactions, and `SimulateWorld()` which simulates a temperature field.
+There are three simulation functions that can be used. `SimulateWorld_ROMS()` which uses ROMS for the environmental fields, `SimulateWorld_ROMS_TrophicInteractins()` which uses ROMS and trophic interactions, and `SimulateWorld()` which simulates a temperature field.
 
 We will use `SimulateWorld()` for this example. Type `?SimulateWorld` as console to learn more about this function.
 
@@ -168,7 +168,7 @@ ylim2 <- 1.05*max(pred.gam$pred, pred.brt$pred, pred.mlp$pred)
 
 #actual TPC
 xx <- seq(0, 7, length=100)
-#yy must match response function in SimulatedWorld function (sim1$meta$response.curve$temp)
+#yy must match response function in SimulateWorld function (sim1$meta$response.curve$temp)
 yy <- dnorm(xx, mean=4, sd=1)  
 plot(xx, yy, type="l", lty=2, main="Actual TPC", col="red", xlim=c(0,8), ylab="suitability", xlab="Temp")
 xlim <- round(100*(max(new_dat$temp)/7))

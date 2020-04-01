@@ -19,7 +19,7 @@ SimulateWorld_ROMS_TrophicInteraction(
 \item{dir}{(optional) The path to the directory where the folder 'gfdl' is.}
 }
 \description{
-This code replicates SimulatedWorld_ROMS_function, but adds in a trophic interaction, where:
+This code replicates SimulateWorld_ROMS_function, but adds in a trophic interaction, where:
 \itemize{
  \item Species A: distribution and abundance driven by SST and Chl-a
  \item Species B: distribution and abundance drivn by SST and Species A

@@ -20,7 +20,9 @@ Depends:
   stringr
 Suggests: knitr, rmarkdown, dplyr, gridExtra
 Imports: Rdpack
-Author: Stephanie Brodie, James Smith, Eli Holmes
+Authors@R: c(person("Stephanie", "Brodie", role = c("aut", "cre"), email = "stephanie.brodie@noaa.gov"),
+             person("James", "Smith", role = "aut", email = "james.smith@noaa.gov"),
+             person("Eli", "Holmes", role = "aut", email = "eli.holmes@noaa.gov"))
 Description: WRAP project
 License: GPL-2
 LazyData: yes
