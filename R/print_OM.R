@@ -2,7 +2,7 @@
 #' 
 #' prints a OM object
 #' 
-#' @param x The full_matrix object
+#' @param x OM object
 #' @method print OM
 #' @export
 print.OM <- function(x, ...) {
