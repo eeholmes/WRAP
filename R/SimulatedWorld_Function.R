@@ -11,7 +11,7 @@
 #' @param n.year Number of years to simulate. Default is 100.
 #' @param start.year For showing results choose the start year.
 #' @param response.curve The response curve passed to `virtualspecies::formatFunctions`. All covariates in `covariates` argument must have a response curve specified.
-
+#' @param verbose FALSE means print minimal progress, TRUE means print verbose progress output
 #' 
 #' @examples
 #' # use defaults
@@ -29,7 +29,8 @@ SimulateWorld <- function(
   abund_enviro=c("lnorm_low", "lnorm_high", "poisson"),
   covariates=c("temp"),
   grid.size=20, n.year=100, start.year=2000,
-  response.curve=list(temp=c(fun="dnorm",mean=4,sd=1))){
+  response.curve=list(temp=c(fun="dnorm",mean=4,sd=1)),
+  verbose=FALSE){
   
   temp_spatial <- match.arg(temp_spatial)
   PA_shape <- match.arg(PA_shape)
@@ -57,8 +58,10 @@ SimulateWorld <- function(
   temp_min_int <- temp_diff[1] - temp_min_slope
   
   #----Loop through each year----
+  if(!verbose) cat("Creating environmental simulation for Year ")
   for (y in years){
-    print(paste0("Creating environmental simulation for Year ",y))
+    if(verbose) print(paste0("Creating environmental simulation for Year ",y))
+    if(!verbose) cat(y, " ")
     
     #----Generate Temperature Covariate----
     temp_plain <- raster::raster(ncol=grid.size,nrow=grid.size)
@@ -91,8 +94,8 @@ SimulateWorld <- function(
       temp_plain[] = min + (max-min)*sim_field$dat$new_y / max(sim_field$dat$new_y)
       temp <- temp_plain
     }
-    # plot(temp)
-    
+
+    out <- capture.output(type="message",{
     #----Use Virtual Species to assign response curve----
     envir_stack <- stack(temp) #must be in raster stack format
     names(envir_stack) <- c('temp')
@@ -102,6 +105,7 @@ SimulateWorld <- function(
     
     #----convert temperature raster to species suitability----
     envirosuitability <- virtualspecies::generateSpFromFun(envir_stack,parameters=parameters, rescale = FALSE,rescale.each.response = FALSE)
+    
     #rescale
     ref_max <- dnorm(parameters$temp$args[1], mean=parameters$temp$args[1], sd=parameters$temp$args[2]) #JS/BM: potential maximum suitability based on optimum temperature
     envirosuitability$suitab.raster <- (1/ref_max)*envirosuitability$suitab.raster #JS/BM: rescaling suitability, so the max suitbaility is only when optimum temp is encountered
@@ -139,10 +143,10 @@ SimulateWorld <- function(
         plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
-    # plot(suitability_PA$pa.raster)
+    }) #end capture output
+    if(verbose){out <- str_trim(out); cat(" ", out[out!=""], " ", sep="\n")}
     
     #----Extract suitability for each location----
-    print("Extracting suitability")
     for (i in 1:grid.size^2){
       start_index <- min(which(grid$year==y))
       ii = (i + start_index) -1
@@ -154,6 +158,8 @@ SimulateWorld <- function(
       grid$temp[ii] <-  t
     }
   }
+  if(verbose==2) cat("\n")
+  
   # summary(grid)
   
   #----Create abundance as a function of the environment----
@@ -196,6 +202,7 @@ SimulateWorld <- function(
   obj <- list(meta=meta, grid=grid)
   
   class(obj) <- "OM"
+  
   
   return(obj)
   

@@ -13,7 +13,8 @@ SimulateWorld(
   grid.size = 20,
   n.year = 100,
   start.year = 2000,
-  response.curve = list(temp = c(fun = "dnorm", mean = 4, sd = 1))
+  response.curve = list(temp = c(fun = "dnorm", mean = 4, sd = 1)),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ SimulateWorld(
 \item{start.year}{For showing results choose the start year.}
 
 \item{response.curve}{The response curve passed to `virtualspecies::formatFunctions`. All covariates in `covariates` argument must have a response curve specified.}
+
+\item{verbose}{FALSE means print minimal progress, TRUE means print verbose progress output}
 }
 \description{
 Function to simulate species distribution and abundance with a linearly increasing temperature. The argument temp_diff specifies the range of temperature for the beginning and ending years (year 1 and year 100).
