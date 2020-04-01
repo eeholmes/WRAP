@@ -6,3 +6,4 @@ Rasters_2d_monthly
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+inst\sandbox

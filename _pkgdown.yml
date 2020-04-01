@@ -11,6 +11,8 @@ navbar:
       href: articles/index.html
     - text: "Functions"
       href: reference/index.html
+    - text: "Package Building"
+      href: articles/pkgdown/Package.html
   right:
    - icon: fa-github
      href: https://github.com/eeholmes/WRAP

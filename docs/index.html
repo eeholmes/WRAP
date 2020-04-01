@@ -43,6 +43,9 @@
 <li>
   <a href="reference/index.html">Functions</a>
 </li>
+<li>
+  <a href="articles/pkgdown/Package.html">Package Building</a>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -82,15 +85,9 @@ help(package="WRAP")</a></code></pre>
 <div id="vignettes" class="section level2">
 <h2 class="hasAnchor">
 <a href="#vignettes" class="anchor"></a>Vignettes</h2>
-<p>There are detailed vignettes that show how to fit models and make a variety of plot.</p>
-<p>To see the list type</p>
-<pre><code>vignette(package="WRAP")</code></pre>
-<p>This will open a vignette in the help window.</p>
-<pre><code><a href="articles/Run_OM.html">vignette("Run_OM", package="WRAP")
-
-vignette("Fitting_SDMs", package="WRAP")</a></code></pre>
+<p>There are detailed vignettes that show how to fit models and make a variety of plots. To open links to the vignettes in a browser use:</p>
+<pre><code><a href="https://rdrr.io/r/utils/browseVignettes.html">browseVignettes(package="WRAP")</a></code></pre>
 <p>To find the Rmd files for these vignettes, look in the <code>vignettes</code> folder.</p>
-<p>“Fitting SDMs” is a more involved example with many plots comparing GAM, BRT, MLP models.</p>
 </div>
 <div id="functions" class="section level2">
 <h2 class="hasAnchor">
@@ -98,90 +95,31 @@ vignette("Fitting_SDMs", package="WRAP")</a></code></pre>
 <p>The simulation functions are</p>
 <ul>
 <li>
-<code><a href="reference/SimulateWorld.html">SimulateWorld()</a></code> Use <code><a href="reference/SimulateWorld.html">?SimulateWorld</a></code> to read documentation. This is the function that generates temperature dependent species distribution and abundance</li>
+<code><a href="reference/SimulateWorld.html">SimulateWorld()</a></code> This is the function that generates temperature dependent species distribution and abundance</li>
 <li>
 <code><a href="reference/SimulateWorld_ROMS.html">SimulateWorld_ROMS()</a></code> This function uses temperature data from ROMS to generate species distribution and abundance.</li>
 <li>
 <code><a href="reference/SimulateWorld_ROMS_TrophicInteraction.html">SimulateWorld_ROMS_TrophicInteraction()</a></code> This function uses temperature and chl-a to build suitability for two species, and generate distribution and abundance for one species.</li>
 </ul>
-<p>The simulation functions return a <code>OM</code> object. There is a</p>
+<p>To run the simulations using ROMS data, you need the ROMS data. It is assumed that you have these data in a folder called “Rasters_2d_monthly” in your working directory. That can be changed. See <code><a href="reference/SimulateWorld_ROMS.html">?SimulateWorld_ROMS</a></code>.<br>
+The simulation functions return a <code>OM</code> object. There is a</p>
 <ul>
 <li>
-<code>predict</code> method for <code>OM</code> objects. Use <code><a href="https://rdrr.io/r/stats/predict.html">predict(sim)</a></code> where <code>sim</code> is returned by on of the simulation functions.</li>
+<code>predict</code> method for <code>OM</code> objects. It returns a data frame with hindcast and forecast predicitons or you can pass in newdata.</li>
 <li>
-<code>print</code> method for <code>OM</code> objects. Type <code>sim</code> and basic info about the simulation is shown. Full infor is in <code>sim$meta</code>.</li>
+<code>print</code> method for <code>OM</code> objects. Type <code>sim</code> and basic info about the simulation is shown. Full information is in <code>sim$meta</code>.</li>
 </ul>
-<p>The fitting functions are</p>
+<p>The functions to fit a SDM from a grid of covariates and abundances is</p>
 <ul>
-<li>
-<code>gam_sdm</code> Use <code><a href="reference/gam_sdm.html">?gam_sdm</a></code> to read documentation</li>
+<li><code>gam_sdm</code></li>
 <li><code>brt_sdm</code></li>
 <li><code>mlp_sdm</code></li>
 </ul>
-<p>To run the simulations using ROMS data, you need the ROMS data. It is assumed that you have these data in a folder called “Rasters_2d_monthly” in your working directory. That can be changed. See <code><a href="reference/SimulateWorld_ROMS.html">?SimulateWorld_ROMS</a></code>. The rasters in the package were created from netcdf files using the script <code>Create_ROMS_Rasters.R</code> in the <code>doc\ROMSdata</code> folder. Most users do not need to use this code.</p>
 </div>
-<div id="package-notes" class="section level2">
+<div id="roms-data" class="section level2">
 <h2 class="hasAnchor">
-<a href="#package-notes" class="anchor"></a>Package Notes</h2>
-<div id="workflow" class="section level3">
-<h3 class="hasAnchor">
-<a href="#workflow" class="anchor"></a>Workflow</h3>
-<p>Best to have a separate folder (and RStudio project) for using the package (running simulations, making plots etc) and then a different one for the package. Let’s call these</p>
-<ul>
-<li>Paper: the code that using the package, to do analyses. This would have the Rmd of the paper main text, tables, figures, appendices, etc. Those Rmds, call <code><a href="https://rdrr.io/pkg/WRAP/man">library(WRAP)</a></code> to get access to the functions as needed.</li>
-<li>Package: the code for generating OMs, functions to make plots, etc.</li>
-</ul>
-<p>Have both projects open in RStudio (2 windows).</p>
-<ul>
-<li>When you change the package code, use Build tab to install and restart. Push changes to GitHub if ready. Change the version number in DESCRIPTION when you have changes. That way everyone can keep track that changes have happened to the package.</li>
-<li>To reload the package in the paper project (window), do
-<ul>
-<li>Session &gt; Restart R to reload package or</li>
-<li><code><a href="https://rdrr.io/r/base/detach.html">detach(package:WRAP, unload=TRUE); library(WRAP)</a></code></li>
-</ul>
-</li>
-</ul>
-<p>This workflow is a bit of a hassle when you are actively working on the paper and package at the same time, but it makes it easier for others to use the OM package and keeps the package code clean.</p>
-</div>
-<div id="how-packages-work-simplified" class="section level3">
-<h3 class="hasAnchor">
-<a href="#how-packages-work-simplified" class="anchor"></a>How packages work (simplified):</h3>
-<ul>
-<li>Code (functions) are in R folder</li>
-<li>DESCRIPTION file says what libraries are used. When people install, the packages (dependencies) can be automatically installed too.</li>
-<li>NAMESPACE is what files are exported to users.</li>
-<li>Documentation is at the top in Roxygen format. The documentation is built when you build the package (see instruction below for that). Users can then use ?SimulateWorld say, to see what the function does.</li>
-</ul>
-<p>That’s pretty much it. Package format standardizes documentation but also ensures that your package has no errors that would prevent others from using it. That checking happens (automatically) in the building step.</p>
-</div>
-<div id="to-build-the-package" class="section level3">
-<h3 class="hasAnchor">
-<a href="#to-build-the-package" class="anchor"></a>To build the package</h3>
-<ul>
-<li>When you create a project from the folder with the package files, RStudio will show a Build tab. Click ‘Install and Restart’ to rebuild. You only do this if you make changes to the code. Collaborators who are not modifying code just install from github.</li>
-<li>Before building however, Click Tools &gt; Project Options &gt; Build Tools and click the ‘Generate Documentation with Roxygen’. Click ‘Configure’ and check ‘Build and Reload’ check box.</li>
-</ul>
-</div>
-<div id="vignettes-1" class="section level3">
-<h3 class="hasAnchor">
-<a href="#vignettes-1" class="anchor"></a>Vignettes</h3>
-<p>If a new vignette is added to vignettes folder run this. <code>build_vignettes</code> is putting the <code>doc</code> folder at the base level instead of keeping in <code>inst</code> because normally you make the vignette files when building but I don’t want to do that since they take a long time.</p>
-<pre><code><a href="https://rdrr.io/pkg/devtools/man/build_vignettes.html">devtools::build_vignettes()
-library(ff)
-file.move("doc",file.path("inst", "doc"))
-file.remove(file.path("Meta", "vignette.rds"))
-file.remove("Meta")</a></code></pre>
-<p>Then rebuild. After that this will show the vignettes:</p>
-<pre><code>vignette(package="WRAP")</code></pre>
-<p>And this will open a vignette in the help window.</p>
-<pre><code><a href="articles/Run_OM.html">vignette("Run_OM", package="WRAP")</a></code></pre>
-</div>
-<div id="pkgdown" class="section level3">
-<h3 class="hasAnchor">
-<a href="#pkgdown" class="anchor"></a>pkgdown</h3>
-<p>To build package website.</p>
-<pre><code><a href="https://pkgdown.r-lib.org/reference/build_site.html">pkgdown::build_site()</a></code></pre>
-</div>
+<a href="#roms-data" class="anchor"></a>ROMS data</h2>
+<p>The rasters in the package were created from netcdf files using the script <code>Create_ROMS_Rasters.R</code> in the <code>doc\ROMSdata</code> folder. Most users do not need to use this code.</p>
 </div>
 </div>
   </div>

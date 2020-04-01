@@ -1,0 +1,80 @@
+---
+title: "Package Notes"
+---
+
+## Workflow
+
+You can work as normal inside a package directory with a function files and scripts that you are working on. But your package can get messy quickly.
+
+So it is best to have a separate folder (and RStudio project) for using the package (running simulations, making plots etc) and then a different one for the package. Let's call these
+
+* Paper: the code that using the package, to do analyses. This would have the Rmd of the paper main text, tables, figures, appendices, etc. Those Rmds, call `library(WRAP)` to get access to the functions as needed.
+* Package: the code for generating OMs, functions to make plots, etc.
+
+### Option 1
+
+Edit functions and rebuild package to test. This can be slow since you need to rebuild after each edit. Btw, I do this because I run into fewer bugs by doing continual builds.
+
+Have both projects open in RStudio (2 windows).
+
+* When you change the package code, use Build tab to install and restart. Push changes to GitHub if ready. Change the version number in DESCRIPTION when you have changes. That way everyone can keep track that changes have happened to the package.
+* To reload the package in the paper project (window), do 
+  * Session > Restart R to reload package or
+  * `detach(package:WRAP, unload=TRUE); library(WRAP)`
+  
+This workflow is a bit of a hassle when you are actively working on the paper and package at the same time, but it makes it easier for others to use the OM package and keeps the package code clean.
+
+### Option 2
+
+Work in the "Paper" project. Give the function you are working on a different name than the one in the package. Say you are working on SimulateWorld. Call the function SimulateWorld2. Then it won't conflict with the one in the package. When ready, copy SimulateWorld into the package. Then rebuild the package.
+
+This can be efficient when first developing a function. If I am doing this, I make a temporary folder called sandbox that I put my temporary scripts or function files in. Then I delete sandbox when done. I alway keep the R folder clean (no temporary work).  Make sure to add sandbox to .Rbuildignore and .gitignore.  
+
+
+## How packages work (simplified):
+
+* Code (functions) are in R folder
+* DESCRIPTION file says what libraries are used. When people install, the packages (dependencies) can be automatically installed too.
+* NAMESPACE is what files are exported to users.
+* Documentation is at the top in Roxygen format. The documentation is built when you build the package (see instruction below for that). Users can then use ?SimulateWorld say, to see what the function does.
+* The inst folder has a doc folder. Don't touch that. R uses that for vignettes. The other material in inst will be copied into doc and put at the base level of the package when installed. Thus if you have anything in inst that you don't want installed, add that to .Rbuildignore.
+
+That's pretty much it.  Package format standardizes documentation but also ensures that your package has no errors that would prevent others from using it. That checking happens (automatically) in the building step.
+
+## To build the package
+
+* When you create a project from the folder with the package files, RStudio will show a Build tab. Click 'Install and Restart' to rebuild. You only do this if you make changes to the code. Collaborators who are not modifying code just install from github.
+* Before building however, Click Tools > Project Options > Build Tools and click the 'Generate Documentation with Roxygen'. Click 'Configure' and check 'Build and Reload' check box.
+
+## Vignettes
+
+If a new vignette is added to vignettes folder run this. `build_vignettes` is putting the `doc` folder at the base level instead of keeping in `inst` because normally you make the vignette files when building but I don't want to do that since they take a long time.
+
+```
+devtools::build_vignettes()
+library(ff)
+file.move("doc",file.path("inst", "doc"))
+file.remove(file.path("Meta", "vignette.rds"))
+file.remove("Meta")
+```
+
+Then rebuild.  After that this will show the vignettes:
+
+```
+vignette(package="WRAP")
+```
+
+And this will open a vignette in the help window.
+
+```
+vignette("Run_OM", package="WRAP")
+```
+
+## pkgdown
+
+To build package website.
+
+```
+pkgdown::build_site(examples=FALSE)
+```
+
