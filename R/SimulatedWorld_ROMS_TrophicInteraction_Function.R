@@ -17,14 +17,17 @@
 #' 
 #' @param PA_shape specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
 #' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
-#' @param dir 
+#' @param dir (optional) The path to the directory where the folder 'gfdl' is.
 #' 
 #' @examples
 #' test <- SimulateWorld_ROMS_TrophicInteraction(PA_shape="logistic", abund_enviro="lnorm_low")
 #' 
 #' @export
 #' 
-SimulateWorld_ROMS_TrophicInteraction <- function(PA_shape=c("logistic", "logistic_prev", "linear"), abund_enviro=c("lnorm_low", "lnorm_high", "poisson"), dir=file.path(here::here(),"Rasters_2d_monthly")){
+SimulateWorld_ROMS_TrophicInteraction <- function(
+  PA_shape=c("logistic", "logistic_prev", "linear"), 
+  abund_enviro=c("lnorm_low", "lnorm_high", "poisson"),
+  dir=file.path(here::here(),"Rasters_2d_monthly")){
   PA_shape <- match.arg(PA_shape)
   abund_enviro <- match.arg(abund_enviro)
   if(!dir.exists(dir))
