@@ -9,10 +9,11 @@ SimulateWorld(
   temp_spatial = c("simple", "matern"),
   PA_shape = c("logistic", "logistic_prev", "linear"),
   abund_enviro = c("lnorm_low", "lnorm_high", "poisson"),
-  covariates = c("sst"),
+  covariates = c("temp"),
   grid.size = 20,
   n.year = 100,
-  start.year = 2000
+  start.year = 2000,
+  response.curve = list(temp = c(fun = "dnorm", mean = 4, sd = 1))
 )
 }
 \arguments{
@@ -24,13 +25,15 @@ SimulateWorld(
 
 \item{abund_enviro}{specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)}
 
-\item{covariates}{Currently only "sst" is allowed in this function}
+\item{covariates}{Currently only "temp" is allowed in this function}
 
 \item{grid.size}{Default is a 20x20 grid}
 
 \item{n.year}{Number of years to simulate. Default is 100.}
 
 \item{start.year}{For showing results choose the start year.}
+
+\item{response.curve}{The response curve passed to `virtualspecies::formatFunctions`. All covariates in `covariates` argument must have a response curve specified.}
 }
 \description{
 Function to simulate species distribution and abundance with a linearly increasing temperature. The argument temp_diff specifies the range of temperature for the beginning and ending years (year 1 and year 100).

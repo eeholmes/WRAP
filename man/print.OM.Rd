@@ -7,7 +7,7 @@
 \method{print}{OM}(x, ...)
 }
 \arguments{
-\item{x}{The full_matrix object}
+\item{x}{OM object}
 }
 \description{
 prints a OM object

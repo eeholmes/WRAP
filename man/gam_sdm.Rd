@@ -6,20 +6,20 @@
 \usage{
 gam_sdm(
   x,
-  covariates,
+  covariates = NULL,
   response = c("pres", "abundance"),
-  start.forecast.year = 2020,
+  start.forecast.year = 2021,
   k = NULL
 )
 }
 \arguments{
-\item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR just the grid from the operating model (\code{sim$grid}).}
+\item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).}
 
-\item{covariates}{(required) covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid).}
+\item{covariates}{Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.}
 
 \item{response}{"pres" or "abundance"}
 
-\item{start.forecast.year}{The years equal or less will be used for fitting and the years greater than are the forecasted years.}
+\item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years.}
 
 \item{k}{The smoothness of the fit can be restricted by passing in k. If left off, the default will be used.}
 }

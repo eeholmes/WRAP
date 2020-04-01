@@ -6,17 +6,17 @@
 \usage{
 mlp_sdm(
   x,
-  covariates,
+  covariates = NULL,
   response = c("pres", "abundance"),
-  start.forecast.year = 2020
+  start.forecast.year = 2021
 )
 }
 \arguments{
-\item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR just the grid from the operating model (\code{sim$grid}).}
+\item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).}
 
-\item{covariates}{(required) covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid).}
+\item{covariates}{Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.}
 
-\item{start.forecast.year}{The years equal or less will be used for fitting and the years greater than are the forecasted years.}
+\item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years.}
 }
 \description{
 Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.

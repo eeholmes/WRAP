@@ -16,7 +16,7 @@ SimulateWorld_ROMS_TrophicInteraction(
 
 \item{abund_enviro}{specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)}
 
-\item{dir}{}
+\item{dir}{(optional) The path to the directory where the folder 'gfdl' is.}
 }
 \description{
 This code replicates SimulatedWorld_ROMS_function, but adds in a trophic interaction, where:
