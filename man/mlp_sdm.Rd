@@ -4,12 +4,7 @@
 \alias{mlp_sdm}
 \title{SDM fit with MLP}
 \usage{
-mlp_sdm(
-  x,
-  covariates = NULL,
-  response = c("pres", "abundance"),
-  start.forecast.year = 2021
-)
+mlp_sdm(x, covariates = NULL, start.forecast.year = 2021)
 }
 \arguments{
 \item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).}
@@ -20,6 +15,8 @@ mlp_sdm(
 }
 \description{
 Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.
+Models is fit to both the
+presence (pres column) and log(abundance) are returned.
 }
 \examples{
 sim <- SimulateWorld()

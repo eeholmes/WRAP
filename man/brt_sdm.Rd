@@ -4,12 +4,7 @@
 \alias{brt_sdm}
 \title{SDM fit with BRT}
 \usage{
-brt_sdm(
-  x,
-  covariates = NULL,
-  response = c("pres", "abundance"),
-  start.forecast.year = 2021
-)
+brt_sdm(x, covariates = NULL, start.forecast.year = 2021)
 }
 \arguments{
 \item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).}
@@ -19,7 +14,9 @@ brt_sdm(
 \item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years.}
 }
 \description{
-Build a boosted regression tree species distribution model from the output from a operating model using the dismo package.
+Build a boosted regression tree species distribution model from the output from a operating model using the dismo package. 
+Models fit to both the
+presence (pres column) and log(abundance) are returned.
 }
 \examples{
 sim <- SimulateWorld()

@@ -2,6 +2,7 @@
 
 S3method(plot,SDM)
 S3method(predict,OM)
+S3method(predict,SDM)
 S3method(print,OM)
 export(SimulateWorld)
 export(SimulateWorld_ROMS)
