@@ -76,8 +76,10 @@ mlp_sdm <- function(x, covariates=NULL,
                                 algorithm = "rprop+", 
                                 threshold = 0.2)
   }
+  # Add on the meta info from the OM object
+  fit <- list(fit, meta=x$meta, sdm.response=resp)
   
-  class(fit) <- c(class(fit), "mlp")
+  class(fit) <- c(class(fit), "mlp", "SDM")
   
   return(fit)
 }

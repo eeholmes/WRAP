@@ -66,7 +66,9 @@ brt_sdm <- function(x, covariates=NULL,
     learning.rate = 0.01, 
     bag.fraction = 0.6)
   
+  # Add on the meta info from the OM object
+  fit <- list(fit, meta=x$meta, sdm.response=resp)
   class(fit) <- c(class(fit), "brt")
-  
+
   return(fit)
 }

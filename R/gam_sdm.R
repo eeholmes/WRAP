@@ -22,8 +22,9 @@
 #' 
 #' @export
 gam_sdm <- function(x, covariates=NULL,
-                    response=c("pres", "abundance"),
+                    response=c("presence", "abundance"),
                     start.forecast.year=2021, k=NULL){
+  
   if(!inherits(x, "OM") & !all(c("meta", "grid") %in% names(x))) stop("Something is wrong. x should be a OM (operating model) object or a list with meta and grid.")
   if(!(c("abund_enviro") %in% names(x$meta))) stop("Something is wrong. x$meta needs 'abund_enviro' value.")
   abund_enviro <- x$meta$abund_enviro
@@ -78,5 +79,9 @@ gam_sdm <- function(x, covariates=NULL,
     frm.text <- paste("resp ~", frm.text)
     fit <- mgcv::gam(as.formula(frm.text), data=dat_hist, family=poisson)
   }
+  # Add on the meta info from the OM object
+  fit <- list(fit, meta=x$meta, sdm.response=resp)
+  class(fit) <- c(class(fit), "SDM")
+  
   return(fit)
 }
