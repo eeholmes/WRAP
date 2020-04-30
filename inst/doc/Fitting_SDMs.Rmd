@@ -1,0 +1,344 @@
+---
+title: "Fitting SDMs"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fitting_SDMs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  cache = TRUE,
+  fig.width=6,
+  fig.height=6,
+  message=FALSE,
+  collapse=TRUE
+)
+```
+
+This vignette shows how to fit SDMs with the **WRAP** package and make some basic plots. The fitting functions in **WRAP** are 
+
+* `gam_sdm()`
+* `brt_sdm()`
+* `mlp_sdm()`
+
+Type `?gam_sdm`, etc, to learn about the arguments for the function.
+
+# Example
+
+```{r message=FALSE, warning=FALSE}
+library(WRAP)
+```
+
+## Simulate data 
+
+There are three simulation functions that can be used. `SimulateWorld_ROMS()` which uses ROMS for the environmental fields, `SimulateWorld_ROMS_TrophicInteractins()` which uses ROMS and trophic interactions, and `SimulateWorld()` which simulates a temperature field.
+
+We will use `SimulateWorld()` for this example. Type `?SimulateWorld` as console to learn more about this function.
+
+Parameters for the function are
+
+* `abund_enviro` can be "lnorm_low" (SB); "lnorm_high" (EW); or "poisson" (JS).
+* `PA_shape` can be "logistic" (SB); "logistic_prev","linear" (JS)
+* `temp_spatial` can be "simple" (SB); or "matern" (EW)
+* `temp_diff` is only for the simulated temperature. It specifies min and max temps at year 1 and year 100 (e.g. temp_diff=c(1,3,5,7) means year 1 varies from 1-3C and year 100 from 5-7C). 
+* `dir` is the directory where ROMS data is stored. The ROMS functions are looking for a directory called `gfdl`. The default assumption is that this is in your working directory in a folder called `Rasters_2d_monthly`.
+
+We will set the parameters so the following for our simulated abundances and presence/absence grid.
+
+```{r}
+abund_enviro <- "lnorm_low"
+PA_shape <- "logistic"
+temp_spatial <- "matern"
+temp_diff <- c(1,4,3,7) 
+```
+
+Simulate species abundances from the simulated temperature fields.
+
+```{r simworld, results='hide', message=FALSE}
+sim1 <- SimulateWorld(temp_diff = temp_diff,  temp_spatial = temp_spatial, 
+                      PA_shape = PA_shape, abund_enviro = abund_enviro) 
+```
+
+Printing the output will show you basic information about the simulation. This information is in `sim1$meta`.
+
+```{r print_sim1}
+sim1
+```
+
+### Save data
+
+Since simulations take a long time to run, you may want to create a directory in your working directory for the simulations and save them there. Then you can reload the simulations instead of re-running.
+
+Create a directory for the simulations:
+
+```{r, eval=FALSE}
+if(!dir.exists(file.path(here::here(), 'Sim1')))
+  dir.create(file.path(here::here(), 'Sim1'))
+```
+
+Save the simulation.
+
+```{r, eval=FALSE}
+saveRDS(sim1, file=file.path(here::here(), "Sim1", "Sim1.rds"))
+```
+
+## Plot the simulated data
+
+Create dataframe with historical/forecast data. The data frame with the abundances and presence/absence is in `grid` in the simulation object returned by the function.
+
+```{r}
+dat <- sim1$grid
+dat_hist <- dat[dat$year<=2020,]
+dat_fcast <- dat[dat$year>2020,]
+```
+
+Make some plots to explore the data. The simulated environmental covariate in `sim1` is `temp`.
+
+```{r, fig.height=6, fig.width=6}
+#All Years
+par(mfrow=c(2,2))
+plot(aggregate(suitability~year,dat,FUN="mean"),type="l", lwd=2, ylab="Suitability",col="dark grey")
+lines(aggregate(suitability~year,dat[dat$year<=2020,],FUN="mean"),col="blue")
+plot(aggregate(pres~year,dat,FUN="mean"),type="l", lwd=2,ylab="Presence",col="dark grey")
+lines(aggregate(pres~year,dat[dat$year<=2020,],FUN="mean"),col="blue")
+plot(aggregate(abundance~year,dat,FUN="sum"),type="l",  lwd=2,ylab="Abundance", col="dark grey")
+lines(aggregate(abundance~year,dat[dat$year<=2020,],FUN="sum"),col="blue")
+plot(aggregate(temp~year,dat,FUN="mean"),type="l",ylab="Temperature", col="dark grey")
+```
+
+## Fit SDMs to the simulated grid
+
+We will fit GAM, BRT and MLP SDM models to the simulated grids. The fit function will fit the correct model based on the value of `abund_enviro`. If you want to restrict the smoothing, you can pass in `k` to the GAM function. The default fitting period is years prior to 2021 (`start.forecast.year=2021`) and will use that.
+
+```{r fitmodels, results='hide', message=FALSE, fig.show='hide'}
+gam.p <- gam_sdm(sim1, covariates="temp", response="pres")
+gam.a <- gam_sdm(sim1, covariates="temp", response="abundance")
+
+brt.p <- brt_sdm(sim1, covariates="temp", response="pres")
+brt.a <- brt_sdm(sim1, covariates="temp", response="abundance")
+
+mlp.p <- mlp_sdm(sim1, covariates="temp", response="pres")
+mlp.a <- mlp_sdm(sim1, covariates="temp", response="abundance")
+```
+
+## Create Predictions
+
+Now plot the comparison of the models for temperaturs 0 to 7C.
+
+First we need to set up the temperatures used for prediction.
+
+```{r}
+new_dat <- data.frame(temp=seq(0,7,length=100))
+```
+
+Then we will save our predictions from each model. We can do the predictions using our fitted models or we can use the OM object `sim` that was output from the simulation.
+
+Here is how to set up the simulation from the fitted SDM.
+```{r pred_fit1, results='hide', message=FALSE, fig.show='hide'}
+pred.gam.p <- predict(gam.p, newdata=new_dat, type="response")
+pred.gam.a <- predict(gam.a, newdata=new_dat, type="response")
+
+pred.brt.p <- predict(brt.p, newdata=new_dat, type="response",
+     n.trees=brt.p$gbm.call$best.trees)
+pred.brt.a <- predict(brt.a, newdata=new_dat, type="response",
+     n.trees=brt.a$gbm.call$best.trees)
+
+dat_norm <- new_dat
+dat_norm$temp <- BBmisc::normalize(dat_norm$temp)
+pred.mlp.p <- predict(mlp.p, dat_norm)
+pred.mlp.a <- predict(mlp.a, dat_norm)
+```
+
+Alternatively here is how to use the fitted SDM to create predictions. You can (optionally) pass in a fitted model. If you do not, the predict function with fit a SDM based on the `model` argument. We will pass in the fitted SDMs to speed up the predictions.  This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added. A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.
+
+```{r alt_pred, results='hide', message=FALSE, fig.show='hide'}
+pred.gam <- predict(sim1, p.sdm=gam.p, a.sdm=gam.a, newdata=new_dat)
+pred.brt <- predict(sim1, p.sdm=brt.p, a.sdm=brt.a, newdata=new_dat)
+pred.mlp <- predict(sim1, p.sdm=mlp.p, a.sdm=mlp.a, newdata=new_dat)
+```
+
+## Plot Predictions
+
+```{r}
+par(mfrow=c(2,2), mar=c(3,4,4,2))
+ylim2 <- 1.05*max(pred.gam$pred, pred.brt$pred, pred.mlp$pred)
+
+#actual TPC
+xx <- seq(0, 7, length=100)
+#yy must match response function in SimulateWorld function (sim1$meta$response.curve$temp)
+yy <- dnorm(xx, mean=4, sd=1)  
+plot(xx, yy, type="l", lty=2, main="Actual TPC", col="red", xlim=c(0,8), ylab="suitability", xlab="Temp")
+xlim <- round(100*(max(new_dat$temp)/7))
+lines(xx[1:xlim], yy[1:xlim], lwd=2)
+
+#gam
+plot(new_dat$temp, pred.gam$pred, type="l",
+     main="lnorm_low GAM", xlim=c(0,8), col="red", lty=2, ylim=c(0,ylim2), ylab="Abundance", xlab="Temp")
+lines(new_dat$temp, pred.gam$pred, lwd=2)
+
+#brt
+plot(new_dat$temp, pred.brt$pred, type="l",
+     main="lnorm_low BRT", xlim=c(0,8), col="red", lty=2, ylim=c(0,ylim2), ylab="Abundance", xlab="Temp")
+lines(new_dat$temp, pred.brt$pred, lwd=2)
+
+#MLP
+plot(new_dat$temp, pred.mlp$pred, type="l",
+     main="lnorm_low MLP", xlim=c(0,8), col="red", lty=2, ylim=c(0,ylim2), ylab="Abundance", xlab="Temp")
+lines(new_dat$temp, pred.mlp$pred, lwd=2)
+
+par(mfrow=c(1,1))
+```
+
+## Make Hindcast and Forecast predictions
+
+If `newdata` is left off, `predict(sim)` where `sim` is the output from one of the simulation functions (operating model) will return a data frame with a hindcast for years before start.forecast.year and a forecast after that. See `?predict.OM` for other arguments that this function takes.
+
+You can pass in a previously fitted SDM to speed up the function as we did before. But you can leave these off and `predict` will fit the SDM based on the value in `sim$meta$abund_enviro`. Specify the SDM model with argument `model`.
+
+```{r pred_om, results='hide', fig.show='hide'}
+pred.gam2 <- predict(sim1, model="gam")
+pred.brt2 <- predict(sim1, model="brt")
+pred.mlp2 <- predict(sim1, model="mlp")
+```
+
+Assemble the predictions into one data frame.
+```{r}
+nr <- nrow(pred.gam2)
+pred.all <- rbind(pred.gam2, pred.brt2, pred.mlp2)
+pred.all$model <- c(rep("gam", nr), rep("brt", nr), rep("mlp", nr))
+```
+
+## Compare abundance predictons
+
+First we create a data frame of the abundance predictions and true abundance.
+
+```{r}
+abund_enviro <- sim1$meta$abund_enviro
+
+# sum up the abundance predictions across cells by year
+# model col is the model
+abund <- aggregate(pred~year+model, pred.all, FUN="sum")
+colnames(abund) <- c("year", "model", "abundance")
+
+# Add true abundance
+x <- sim1$grid
+if (abund_enviro == "poisson") x$abundance <- round(abundance)
+tmp <- aggregate(abundance~year, x, FUN="sum")
+tmp$model <- "true"
+tmp <- tmp[,c("year", "model", "abundance")]
+
+abund <- rbind(abund, tmp)
+```
+
+Next we plot
+
+```{r}
+p <- ggplot(abund, aes(x=year, y=abundance, color=model)) + 
+  geom_line() +
+  ggtitle("Comparison of lnorm_low models") +
+  geom_vline(xintercept=2020) +
+  annotate("text", x=2020, y=max(abund$abundance), label="  forecast", hjust=0) +
+  annotate("text", x=2020, y=max(abund$abundance), label="hindcast  ", hjust=1)
+```
+
+
+## Calculate and plot centre of gravity
+
+```{r}
+# First compute the true cog
+library(dplyr)
+cog_lat <- x %>% group_by(year) %>% 
+  summarize(cog=weighted.mean(x=lat, w=abundance))
+cog_lat <- cbind(model="true", cog_lat, stringsAsFactors = FALSE)
+
+# Now add the model cogs
+tmp <- pred.all %>% group_by(model, year) %>% 
+  summarize(cog=weighted.mean(x=lat, w=pred))
+
+# dplyr uses tibbles and they return a matrix when you use rbind(). ug.
+# so use 
+cog_lat <- dplyr::bind_rows(cog_lat, tmp)
+```
+
+`cog_lat` is now a data frame with the center of gravity and a model column for the model (or true).
+
+```{r}
+p <- ggplot(cog_lat, aes(x=year, y=cog, color=model)) + 
+  geom_line() +
+  ggtitle("Comparison of lnorm_low models") +
+  ylab("Centre of Gravity (deg lat)") +
+  geom_vline(xintercept=2020) +
+  annotate("text", x=2020, y=max(cog_lat$cog), label="  forecast", hjust=0) +
+  annotate("text", x=2020, y=max(cog_lat$cog), label="hindcast  ", hjust=1)
+
+p
+```
+
+## Plot Surface Predictions
+
+These are point predictions for individual cells.  We will show this for a particular year, in this case 2021.
+
+```{r surf_pred, fig.height=6, fig.width=6}
+#Future
+Y = 2021
+x <- subset(sim1$grid, year==Y)
+#Truth
+p1 <- ggplot(x, aes(lon, lat))+
+  geom_tile(aes(fill=abundance)) +
+  theme_classic() +
+  ggtitle("Truth")+
+  labs(y="Latitude") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous( expand = c(0, 0)) +
+  theme(legend.title=element_blank(),
+        plot.title = element_text(hjust=0.5),
+        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  scale_fill_viridis()
+
+#Gam
+x <- subset(pred.all, year==Y & model=="gam")
+p2 <- ggplot(x, aes(lon,lat))+
+  geom_tile(aes(fill=pred)) +
+  theme_classic() +
+  ggtitle("GAM")+
+  labs(y="Latitude") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous( expand = c(0, 0)) +
+  theme(legend.title=element_blank(),
+        plot.title = element_text(hjust=0.5),
+        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  scale_fill_viridis()
+
+#BRT
+x <- subset(pred.all, year==Y & model=="brt")
+p3 <- ggplot(x, aes(lon,lat))+
+  geom_tile(aes(fill=pred)) +
+  theme_classic() +
+  ggtitle("BRT")+
+  labs(y="Latitude") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous( expand = c(0, 0)) +
+  theme(legend.title=element_blank(),
+        plot.title = element_text(hjust=0.5),
+        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  scale_fill_viridis()
+
+#Gam
+x <- subset(pred.all, year==Y & model=="mlp")
+p4 <- ggplot(x, aes(lon,lat))+
+  geom_tile(aes(fill=pred)) +
+  theme_classic() +
+  ggtitle("MLP")+
+  labs(y="Latitude") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous( expand = c(0, 0)) +
+  theme(legend.title=element_blank(),
+        plot.title = element_text(hjust=0.5),
+        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  scale_fill_viridis()
+
+gridExtra::grid.arrange(p1, p2, p3, p4, nrow=2)
+```
