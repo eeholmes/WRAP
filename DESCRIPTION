@@ -26,7 +26,7 @@ Authors@R: c(person("Stephanie", "Brodie", role = c("aut", "cre"), email = "step
 Description: WRAP project
 License: GPL-2
 LazyData: yes
-BuildVignettes: no
+BuildVignettes: yes
 ByteCompile: TRUE
 RdMacros: Rdpack
 VignetteBuilder: knitr

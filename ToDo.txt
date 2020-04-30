@@ -1,0 +1,7 @@
+To do
+
+plot_cog not done
+revise the vignettes with change to fitting functions in that they return both p and a models
+
+finish predict_SDM function incorporate into predict_OM
+
