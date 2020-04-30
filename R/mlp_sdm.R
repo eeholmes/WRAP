@@ -1,12 +1,13 @@
 #' SDM fit with MLP
 #'
 #' Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.
-#' Models is fit to both the
+#' Models fit to both the
 #' presence (pres column) and log(abundance) are returned.
 
 #' @param x (required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).
 #' @param covariates Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.
-#' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years.
+#' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years
+#' @param control The control parameters for the `neuralnet::neuralnet` call.
 #'
 #' @examples
 #' sim <- SimulateWorld()
@@ -17,8 +18,9 @@
 #' 
 #' @export
 mlp_sdm <- function(x, covariates=NULL,
-                    start.forecast.year=2021){
-
+                    start.forecast.year=2021,
+                    control=list(hidden=c(3), algorithm = "rprop+", threshold = 0.2)){
+  
   if(!inherits(x, "OM") & !all(c("meta", "grid") %in% names(x))) stop("Something is wrong. x should be a OM (operating model) object or a list with meta and grid.")
   if(!(c("abund_enviro") %in% names(x$meta))) stop("Something is wrong. x$meta needs 'abund_enviro' value.")
   abund_enviro <- x$meta$abund_enviro
@@ -46,27 +48,28 @@ mlp_sdm <- function(x, covariates=NULL,
   dat_fcast <- dat[dat$year>=start.forecast.year,]
   
   # --- Model fitting section ----
-
-    ## -- The response fit
-    frm.text <- paste("pres ~", paste(covariates, collapse=" + "))
+  
+  ## -- The presence fit
+  frm.text <- paste("pres ~", paste(covariates, collapse=" + "))
   fit.p <- neuralnet::neuralnet(as.formula(frm.text), 
-                                   data = dat_hist,
-                                   hidden = c(3), 
-                                   linear.output = FALSE, 
-                                   algorithm = "rprop+", 
-                                   threshold = 0.2)
-
+                                data = dat_hist,
+                                hidden = control$hidden, 
+                                linear.output = FALSE, 
+                                algorithm = control$algorithm, 
+                                threshold = control$threshold)
+  
   ## -- The abundance fit
   if (abund_enviro == "lnorm_low" | abund_enviro == "lnorm_high") resp <- "log.abundance"
   if (abund_enviro == "poisson") resp <- "round.abundance"
-    fit.a <- neuralnet::neuralnet(as.formula(frm.text), 
+  frm.text <- paste(resp, "~", paste(covariates, collapse=" + "))
+  fit.a <- neuralnet::neuralnet(as.formula(frm.text), 
                                 data = dat_hist,
-                                hidden = c(3), 
+                                hidden = control$hidden, 
                                 linear.output = TRUE, 
-                                algorithm = "rprop+", 
-                                threshold = 0.2)
-
-    # Add on the meta info from the OM object
+                                algorithm = control$algorithm, 
+                                threshold = control$threshold)
+  
+  # Add on the meta info from the OM object
   fit <- list(presence=fit.p, abundance=fit.a, meta=x$meta)
   
   class(fit) <- c(class(fit), "mlp", "SDM")
