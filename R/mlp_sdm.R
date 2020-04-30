@@ -9,6 +9,8 @@
 #' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years
 #' @param control The control parameters for the `neuralnet::neuralnet` call.
 #'
+#' @return A list with the presence and abundance fits and the meta data.
+#' 
 #' @examples
 #' sim <- SimulateWorld()
 #' fit <- mlp_sdm(sim, "temp")

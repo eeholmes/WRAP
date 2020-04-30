@@ -10,6 +10,8 @@
 #' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years.
 #' @param k The smoothness of the fit can be restricted by passing in k. If left off, the default will be used.
 #' 
+#' @return A list with the presence and abundance fits and the meta data.
+#' 
 #' @examples
 #' # use defaults
 #' sim <- SimulateWorld()

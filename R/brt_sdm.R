@@ -7,6 +7,9 @@
 #' @param x (required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).
 #' @param covariates Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.
 #' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years.
+#' @param control Parameters for the `dismo::gbm.step` call.
+#' 
+#' @return A list with the presence and abundance fits and the meta data.
 #'
 #' @examples
 #' sim <- SimulateWorld()
@@ -22,7 +25,8 @@
 #' 
 #' @export
 brt_sdm <- function(x, covariates=NULL,
-                    start.forecast.year=2021){
+                    start.forecast.year=2021,
+                    control = list(tree.complexity = 3, learning.rate = 0.01, bag.fraction = 0.6)){
   if(!inherits(x, "OM") & !all(c("meta", "grid") %in% names(x))) stop("Something is wrong. x should be a OM (operating model) object or a list with meta and grid.")
   if(!(c("abund_enviro") %in% names(x$meta))) stop("Something is wrong. x$meta needs 'abund_enviro' value.")
   abund_enviro <- x$meta$abund_enviro
@@ -48,7 +52,7 @@ brt_sdm <- function(x, covariates=NULL,
   
   # --- Model fitting section ----
 
-  ## --- Response fit
+  ## --- Presence fit
   
   fam <- "bernoulli"
   fit.p <- dismo::gbm.step(
@@ -56,10 +60,10 @@ brt_sdm <- function(x, covariates=NULL,
     gbm.x = covariates, 
     gbm.y = 'pres', 
     family = fam, 
-    tree.complexity = 3, 
-    learning.rate = 0.01, 
-    bag.fraction = 0.6)
-
+    tree.complexity = control$tree.complexity, 
+    learning.rate = control$learning.rate, 
+    bag.fraction = control$bag.fraction)
+  
   ## --- Abundance fit
   
   if(str_detect(abund_enviro, "lnorm")){ fam <- "gaussian"; resp <- "log.abundance" }
@@ -69,9 +73,9 @@ brt_sdm <- function(x, covariates=NULL,
     gbm.x = covariates, 
     gbm.y = resp, 
     family = fam, 
-    tree.complexity = 3, 
-    learning.rate = 0.01, 
-    bag.fraction = 0.6)
+    tree.complexity = control$tree.complexity, 
+    learning.rate = control$learning.rate, 
+    bag.fraction = control$bag.fraction)
   
   # Add on the meta info from the OM object
   fit <- list(presence=fit.p, abundance=fit.a, meta=x$meta)
