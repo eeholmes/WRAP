@@ -2,49 +2,60 @@
 #' 
 #' plots the center of gravity versus time
 #' 
-#' @param x SDM object
-#' @param ... Additional SDM objects to compare
-
+#' @param x An \code{\link[=OMclass]{OM}} object output by one of the simulation functions.
+#' @param ... SDMs to compare. Must be an \link[=SDM_class]{SDM} object output from one of the fitting functions:
+#' \code{\link{gam_sdm}}, \code{\link{brt_sdm}}, or \code{\link{mlp_sdm}}.
+#' 
+#' @examples
+#' \dontrun{
+#' sim <- SimulateWorld()
+#' mlp.fit <- mlp_sdm(sim, "temp")
+#' plot_cog(sim, mlp.fit)
+#' }
+#' 
 #' @export
 plot_cog <- function(x, ...) {
+  if(!inherits(x, "OM")) stop("plot_cog requires an OM object as returned by one of the simulate functions.")
+  
   sdms <- list(...)
-  if(!missing(...)){
-    sdms <- c(list(x), sdms)
-  }else{
-    sdms <- list(x)
-  }
+  
   cl <- deparse( sys.call() )
   cl <- stringr::str_split(cl, "[(]")[[1]][2]; cl <- stringr::str_split(cl, "[)]")[[1]][1]
   mod.names <- stringr::str_trim(stringr::str_split(cl, ",")[[1]])
-
-  pred.all <- NULL
-  nm <- length(sdms)
-  for(i in 1:nm){
-    mod <- sdms[[i]]
-    for(j in c("gam", "brt", "mlp")) if(inherits(mod, j)) themod <- j
-    pred <- predict(mod, model=themod)
-    pred$model <- mod.names[i]
-    pred.all <- dplyr::bind_rows(pred.all, pred)
-  }
-
-  
+  mod.names <- mod.names[-1]
   
   # First compute the true cog
-  cog_lat <- x %>% dplyr::group_by(year) %>% 
+  cog_lat <- x$grid %>% dplyr::group_by(year) %>% 
     dplyr::summarize(cog=weighted.mean(x=lat, w=abundance))
   cog_lat <- cbind(model="true", cog_lat, stringsAsFactors = FALSE)
   
-  # Now add the model cogs
-  tmp <- pred.all %>% dplyr::group_by(model, year) %>% 
-    dplyr::summarize(cog=weighted.mean(x=lat, w=pred))
-  
-  # dplyr uses tibbles and they return a matrix when you use rbind(). ug.
-  # so use 
-  cog_lat <- dplyr::bind_rows(cog_lat, tmp)
-
+  nm <- length(sdms)
+  if(nm != 0){
+    for(i in 1:nm)
+      if(!inherits(sdms[[i]], "SDM")) stop("plot_cog requires SDM objects as returned by one of the fitting functions. See ?plot_cog for info.")
+    
+    pred.all <- NULL
+    for(i in 1:nm){
+      mod <- sdms[[i]]
+      mod.a <- mod$abundance
+      mod.p <- mod$presence
+      cat("getting prediction with", mod.names[i], "\n")
+      pred <- predict(x, p.sdm=mod.p, a.sdm=mod.a, silent=TRUE)
+      pred$model <- mod.names[i]
+      pred.all <- dplyr::bind_rows(pred.all, pred)
+    }
+    
+    # Now add the predicted cogs
+    tmp <- pred.all %>% dplyr::group_by(model, year) %>% 
+      dplyr::summarize(cog=weighted.mean(x=lat, w=pred))
+    
+    # dplyr uses tibbles and they return a matrix when you use rbind(). ug.
+    # so use 
+    cog_lat <- dplyr::bind_rows(cog_lat, tmp)
+  }
   p <- ggplot(cog_lat, aes(x=year, y=cog, color=model)) + 
     geom_line() +
-    ggtitle("Comparison of lnorm_low models") +
+    ggtitle("Center of Gravity") +
     ylab("Centre of Gravity (deg lat)") +
     geom_vline(xintercept=2020) +
     annotate("text", x=2020, y=max(cog_lat$cog), label="  forecast", hjust=0) +

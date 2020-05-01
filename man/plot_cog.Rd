@@ -7,10 +7,19 @@
 plot_cog(x, ...)
 }
 \arguments{
-\item{x}{SDM object}
+\item{x}{An \code{\link[=OMclass]{OM}} object output by one of the simulation functions.}
 
-\item{...}{Additional SDM objects to compare}
+\item{...}{SDMs to compare. Must be output from one of the fitting functions:
+\code{\link{gam_sdm}}, \code{\link{brt_sdm}}, or \code{\link{mlp_sdm}}.}
 }
 \description{
 plots the center of gravity versus time
+}
+\examples{
+\dontrun{
+sim <- SimulateWorld()
+mlp.fit <- mlp_sdm(sim, "temp")
+plot_cog(sim, mlp.fit)
+}
+
 }
