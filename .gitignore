@@ -8,6 +8,7 @@
 # Data folder if user happened to put it in the package
 Rasters_2d_monthly
 Sim1
+ToDo.txt
 
 # Example code in package build process
 *-Ex.R
