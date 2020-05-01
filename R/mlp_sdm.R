@@ -13,7 +13,8 @@
 #' 
 #' @examples
 #' sim <- SimulateWorld()
-#' fit <- mlp_sdm(sim, "temp")
+#' # abundance fit
+#' fit <- mlp_sdm(sim, "temp")$abundance
 #' dat <- fit$data #data used for fit
 #' dat$mlpAbun <- predict(fit, dat)
 #' plot(dat$temp, dat$mlpAbun)
@@ -36,7 +37,6 @@ mlp_sdm <- function(x, covariates=NULL,
   # If lognormal and response is abundance, make the resp column logged
   if ((abund_enviro == "lnorm_low" || abund_enviro == "lnorm_high")){
     dat$log.abundance <- log(dat$abundance) # log
-    dat$log.abundance[dat$abundance==0] <- NA # remove 0s
   }
   if (abund_enviro == "poisson"){
     dat$round.abundance <- round(dat$abundance)
@@ -45,10 +45,9 @@ mlp_sdm <- function(x, covariates=NULL,
   # Covariates must be normalized
   for(i in covariates) dat[,i] <- BBmisc::normalize(dat[,i])
   
-  #Create dataframe with historical/forecast data
+  #Create dataframe with historical data
   dat_hist  <- dat[dat$year < start.forecast.year,]
-  dat_fcast <- dat[dat$year>=start.forecast.year,]
-  
+
   # --- Model fitting section ----
   
   ## -- The presence fit
@@ -61,7 +60,10 @@ mlp_sdm <- function(x, covariates=NULL,
                                 threshold = control$threshold)
   
   ## -- The abundance fit
-  if (abund_enviro == "lnorm_low" | abund_enviro == "lnorm_high") resp <- "log.abundance"
+  if (abund_enviro == "lnorm_low" | abund_enviro == "lnorm_high"){
+    resp <- "log.abundance"
+    dat_hist <- dat_hist[dat_hist$abundance>0,] # remove 0s
+  }
   if (abund_enviro == "poisson") resp <- "round.abundance"
   frm.text <- paste(resp, "~", paste(covariates, collapse=" + "))
   fit.a <- neuralnet::neuralnet(as.formula(frm.text), 
@@ -72,9 +74,9 @@ mlp_sdm <- function(x, covariates=NULL,
                                 threshold = control$threshold)
   
   # Add on the meta info from the OM object
-  fit <- list(presence=fit.p, abundance=fit.a, meta=x$meta)
-  
+  fit <- list(presence=fit.p, abundance=fit.a, 
+              meta=c(x$meta, start.forecast.year=start.forecast.year) )
   class(fit) <- c(class(fit), "mlp", "SDM")
-  
+
   return(fit)
 }

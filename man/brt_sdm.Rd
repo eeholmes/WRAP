@@ -4,7 +4,12 @@
 \alias{brt_sdm}
 \title{SDM fit with BRT}
 \usage{
-brt_sdm(x, covariates = NULL, start.forecast.year = 2021)
+brt_sdm(
+  x,
+  covariates = NULL,
+  start.forecast.year = 2021,
+  control = list(tree.complexity = 3, learning.rate = 0.01, bag.fraction = 0.6)
+)
 }
 \arguments{
 \item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).}
@@ -12,6 +17,11 @@ brt_sdm(x, covariates = NULL, start.forecast.year = 2021)
 \item{covariates}{Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.}
 
 \item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years.}
+
+\item{control}{Parameters for the `dismo::gbm.step` call.}
+}
+\value{
+A list with the presence and abundance fits and the meta data.
 }
 \description{
 Build a boosted regression tree species distribution model from the output from a operating model using the dismo package. 
@@ -20,7 +30,8 @@ presence (pres column) and log(abundance) are returned.
 }
 \examples{
 sim <- SimulateWorld()
-fit <- brt_sdm(sim, "temp")
+# abundance fit
+fit <- brt_sdm(sim, "temp")$abundance
 dev_eval(fit)
 plot(fit)
 
@@ -28,6 +39,6 @@ plot(fit)
 # this allows you to modify the grid (add 0s or error)
 bad.grid <- sim$grid
 bad.grid$abundance <- bad.grid$abundance + rnorm(nrow(bad.grid),0,0.05)
-fit <- brt_sdm(bad.grid, "temp", response="abundance")
+fit <- brt_sdm(bad.grid, "temp")$abundance
 
 }

@@ -4,23 +4,34 @@
 \alias{mlp_sdm}
 \title{SDM fit with MLP}
 \usage{
-mlp_sdm(x, covariates = NULL, start.forecast.year = 2021)
+mlp_sdm(
+  x,
+  covariates = NULL,
+  start.forecast.year = 2021,
+  control = list(hidden = c(3), algorithm = "rprop+", threshold = 0.2)
+)
 }
 \arguments{
 \item{x}{(required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).}
 
 \item{covariates}{Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.}
 
-\item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years.}
+\item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years}
+
+\item{control}{The control parameters for the `neuralnet::neuralnet` call.}
+}
+\value{
+A list with the presence and abundance fits and the meta data.
 }
 \description{
 Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.
-Models is fit to both the
+Models fit to both the
 presence (pres column) and log(abundance) are returned.
 }
 \examples{
 sim <- SimulateWorld()
-fit <- mlp_sdm(sim, "temp")
+# abundance fit
+fit <- mlp_sdm(sim, "temp")$abundance
 dat <- fit$data #data used for fit
 dat$mlpAbun <- predict(fit, dat)
 plot(dat$temp, dat$mlpAbun)

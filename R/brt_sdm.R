@@ -13,7 +13,8 @@
 #'
 #' @examples
 #' sim <- SimulateWorld()
-#' fit <- brt_sdm(sim, "temp")
+#' # abundance fit
+#' fit <- brt_sdm(sim, "temp")$abundance
 #' dev_eval(fit)
 #' plot(fit)
 #' 
@@ -21,7 +22,7 @@
 #' # this allows you to modify the grid (add 0s or error)
 #' bad.grid <- sim$grid
 #' bad.grid$abundance <- bad.grid$abundance + rnorm(nrow(bad.grid),0,0.05)
-#' fit <- brt_sdm(bad.grid, "temp", response="abundance")
+#' fit <- brt_sdm(bad.grid, "temp")$abundance
 #' 
 #' @export
 brt_sdm <- function(x, covariates=NULL,
@@ -40,16 +41,14 @@ brt_sdm <- function(x, covariates=NULL,
   # If lognormal and response is abundance, make the resp column logged
   if ((abund_enviro == "lnorm_low" || abund_enviro == "lnorm_high")){
     dat$log.abundance <- log(dat$abundance) # log
-    dat$log.abundance[dat$abundance==0] <- NA # remove 0s
   }
   if (abund_enviro == "poisson"){
     dat$round.abundance <- round(dat$abundance)
   }
   
-  #Create dataframe with historical/forecast data
+  #Create dataframe with historical data for fitting
   dat_hist <- dat[dat$year < start.forecast.year,]
-  dat_fcast <- dat[dat$year>=start.forecast.year,]
-  
+
   # --- Model fitting section ----
 
   ## --- Presence fit
@@ -66,10 +65,13 @@ brt_sdm <- function(x, covariates=NULL,
   
   ## --- Abundance fit
   
-  if(str_detect(abund_enviro, "lnorm")){ fam <- "gaussian"; resp <- "log.abundance" }
+  if(str_detect(abund_enviro, "lnorm")){ 
+    fam <- "gaussian"
+    resp <- "log.abundance"
+    dat_hist <- dat_hist[dat_hist$abundance>0,] }
   if(abund_enviro=="poisson"){ fam <- "poisson"; resp <- "round.abundance" }
   fit.a <- dismo::gbm.step(
-    data=dat_hist, 
+    data = dat_hist, 
     gbm.x = covariates, 
     gbm.y = resp, 
     family = fam, 
@@ -78,7 +80,8 @@ brt_sdm <- function(x, covariates=NULL,
     bag.fraction = control$bag.fraction)
   
   # Add on the meta info from the OM object
-  fit <- list(presence=fit.p, abundance=fit.a, meta=x$meta)
+  fit <- list(presence=fit.p, abundance=fit.a, 
+              meta=c(x$meta, start.forecast.year=start.forecast.year) )
   class(fit) <- c(class(fit), "brt", "SDM")
 
   return(fit)

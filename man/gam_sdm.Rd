@@ -15,6 +15,9 @@ gam_sdm(x, covariates = NULL, start.forecast.year = 2021, k = NULL)
 
 \item{k}{The smoothness of the fit can be restricted by passing in k. If left off, the default will be used.}
 }
+\value{
+A list with the presence and abundance fits and the meta data.
+}
 \description{
 Build a gam species distribution model from the output from an operating model. 
 Models fit to both the
@@ -29,7 +32,8 @@ summary(fit)
 plot(fit)
 
 sim <- SimulateWorld_ROMS()
-fit <- gam_sdm(sim, "sst", response="abundance", k=4)
+# presence fit
+fit <- gam_sdm(sim, "sst", k=4)$presence
 summary(fit)
 plot(fit)
 

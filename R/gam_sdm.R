@@ -20,7 +20,8 @@
 #' plot(fit)
 #' 
 #' sim <- SimulateWorld_ROMS()
-#' fit <- gam_sdm(sim, "sst", response="abundance", k=4)
+#' # presence fit
+#' fit <- gam_sdm(sim, "sst", k=4)$presence
 #' summary(fit)
 #' plot(fit)
 #' 
@@ -79,7 +80,8 @@ gam_sdm <- function(x, covariates=NULL,
     fit.a <- mgcv::gam(as.formula(frm.text), data=dat_hist, family=poisson)
   }
   # Add on the meta info from the OM object
-  fit <- list(presence=fit.p, abundance=fit.a, meta=x$meta)
+  fit <- list(presence=fit.p, abundance=fit.a, 
+              meta=c(x$meta, start.forecast.year=start.forecast.year))
   class(fit) <- c(class(fit), "SDM")
   
   return(fit)
