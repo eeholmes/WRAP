@@ -2,8 +2,8 @@
 #' 
 #' Does a hindcast and forecast with OM model. Optionally previously fitted SDMs can passed
 #'  in to avoid having to refit SDMs. If abund_enviro is log-normal, then the
-#'  prediction requires a presence model and 
-#'  an abundance model. If these are not passed in, they will be estimated. If 
+#'  prediction requires both a presence model and 
+#'  an abundance model. If these are not passed in, they will be fit using a `model` model. If 
 #'  abund_enviro is poisson, then only the abundance model is needed. Both a hindcast
 #'  and a forecast will be returned. If model is "gam", then 95% CIs will be returned also.
 #'  
@@ -72,23 +72,17 @@ predict.OM <- function(object, model=c("gam", "brt", "mlp"),
   }
 
   # Fit sdms if needed
-  if(abund_enviro!="poisson" & is.null(p.sdm)){
-    if(!silent) cat(paste0("Fitting presence sdm with ", model, "_sdm.\n"))
-    p.sdm <- switch(model,
-                    gam = gam_sdm(object, response="pres", k=k),
-                    brt = brt_sdm(object, response="pres"),
-                    mlp = mlp_sdm(object, response="pres")
+  if( (abund_enviro!="poisson" & is.null(p.sdm)) | is.null(a.sdm) ){
+    if(!silent) cat(paste0("Fitting sdm with ", model, "_sdm.\n"))
+    fit <- switch(model,
+                    gam = gam_sdm(object, k=k),
+                    brt = brt_sdm(object),
+                    mlp = mlp_sdm(object)
     )
+    if(is.null(p.sdm)) p.sdm <- fit$presence
+    if(is.null(a.sdm)) a.sdm <- fit$abundance
   }
-  if(is.null(a.sdm)){
-    if(!silent) cat(paste0("Fitting abundance sdm with ", model, "_sdm.\n"))
-    a.sdm <- switch(model,
-                    gam = gam_sdm(object, response="abundance", k=k),
-                    brt = brt_sdm(object, response="abundance"),
-                    mlp = mlp_sdm(object, response="abundance")
-    )
-  }
-  
+
   # Do the predictions
   
   if(!silent) cat("Computing predictions.\n")

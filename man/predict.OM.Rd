@@ -41,8 +41,8 @@ Invisibly returns a data frames with the prediction. If newdata is not passed in
 \description{
 Does a hindcast and forecast with OM model. Optionally previously fitted SDMs can passed
  in to avoid having to refit SDMs. If abund_enviro is log-normal, then the
- prediction requires a presence model and 
- an abundance model. If these are not passed in, they will be estimated. If 
+ prediction requires both a presence model and 
+ an abundance model. If these are not passed in, they will be fit using a `model` model. If 
  abund_enviro is poisson, then only the abundance model is needed. Both a hindcast
  and a forecast will be returned. If model is "gam", then 95% CIs will be returned also.
 }
