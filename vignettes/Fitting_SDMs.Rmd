@@ -152,7 +152,7 @@ pred.mlp.p <- predict(mlp.p, dat_norm)
 pred.mlp.a <- predict(mlp.a, dat_norm)
 ```
 
-Alternatively here is how to use the fitted SDM to create predictions. You can (optionally) pass in a fitted model. If you do not, the predict function with fit a SDM based on the `model` argument. We will pass in the fitted SDMs to speed up the predictions.  This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added. A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.
+Alternatively here is how to use the fitted SDM to create predictions. You can (optionally) pass in a fitted model. If you do not, the predict function will fit a SDM based on the `model` argument (e.g. `predict(sim1, model="gam")`). We will pass in the fitted SDMs to speed up the predictions.  This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added. A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.
 
 ```{r alt_pred, results='hide', message=FALSE, fig.show='hide'}
 pred.gam <- predict(sim1, p.sdm=gam.p, a.sdm=gam.a, newdata=new_dat)
