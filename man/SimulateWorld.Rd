@@ -38,6 +38,9 @@ SimulateWorld(
 
 \item{verbose}{FALSE means print minimal progress, TRUE means print verbose progress output}
 }
+\value{
+Returns an object of class \code{\link[OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
+}
 \description{
 Function to simulate species distribution and abundance with a linearly increasing temperature. The argument temp_diff specifies the range of temperature for the beginning and ending years (year 1 and year 100).
 }
