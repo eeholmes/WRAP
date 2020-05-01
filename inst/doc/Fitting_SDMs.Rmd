@@ -46,7 +46,7 @@ Parameters for the function are
 * `temp_diff` is only for the simulated temperature. It specifies min and max temps at year 1 and year 100 (e.g. temp_diff=c(1,3,5,7) means year 1 varies from 1-3C and year 100 from 5-7C). 
 * `dir` is the directory where ROMS data is stored. The ROMS functions are looking for a directory called `gfdl`. The default assumption is that this is in your working directory in a folder called `Rasters_2d_monthly`.
 
-We will set the parameters so the following for our simulated abundances and presence/absence grid.
+We will set the parameters to the following for our simulated abundances and presence/absence grid.
 
 ```{r}
 abund_enviro <- "lnorm_low"
@@ -87,7 +87,7 @@ saveRDS(sim1, file=file.path(here::here(), "Sim1", "Sim1.rds"))
 
 ## Plot the simulated data
 
-Create dataframe with historical/forecast data. The data frame with the abundances and presence/absence is in `grid` in the simulation object returned by the function.
+Create a data frame with historical/forecast data. The data frame with the abundances and presence/absence is in `grid` in the simulation object returned by the function.
 
 ```{r}
 dat <- sim1$grid
@@ -111,17 +111,20 @@ plot(aggregate(temp~year,dat,FUN="mean"),type="l",ylab="Temperature", col="dark 
 
 ## Fit SDMs to the simulated grid
 
-We will fit GAM, BRT and MLP SDM models to the simulated grids. The fit function will fit the correct model based on the value of `abund_enviro`. If you want to restrict the smoothing, you can pass in `k` to the GAM function. The default fitting period is years prior to 2021 (`start.forecast.year=2021`) and will use that.
+We will fit GAM, BRT and MLP SDM models to the simulated grids. The fit function will fit the correct model (lognormal or poisson) based on the value of `abund_enviro`. If you want to restrict the smoothing, you can pass in `k` to the GAM function. The default fitting period is years prior to 2021 (`start.forecast.year=2021`). The fitting function will return both the presence and abundance models.
 
 ```{r fitmodels, results='hide', message=FALSE, fig.show='hide'}
-gam.p <- gam_sdm(sim1, covariates="temp", response="pres")
-gam.a <- gam_sdm(sim1, covariates="temp", response="abundance")
+gam.fit <- gam_sdm(sim1, covariates="temp")
+gam.p <- gam.fit$presence
+gam.a <- gam.fit$abundance
 
-brt.p <- brt_sdm(sim1, covariates="temp", response="pres")
-brt.a <- brt_sdm(sim1, covariates="temp", response="abundance")
+brt.fit <- brt_sdm(sim1, covariates="temp")
+brt.p <- brt.fit$presence
+brt.a <- brt.fit$abundance
 
-mlp.p <- mlp_sdm(sim1, covariates="temp", response="pres")
-mlp.a <- mlp_sdm(sim1, covariates="temp", response="abundance")
+mlp.fit <- mlp_sdm(sim1, covariates="temp")
+mlp.p <- mlp.fit$presence
+mlp.a <- mlp.fit$abundance
 ```
 
 ## Create Predictions
@@ -152,7 +155,7 @@ pred.mlp.p <- predict(mlp.p, dat_norm)
 pred.mlp.a <- predict(mlp.a, dat_norm)
 ```
 
-Alternatively here is how to use the fitted SDM to create predictions. You can (optionally) pass in a fitted model. If you do not, the predict function with fit a SDM based on the `model` argument. We will pass in the fitted SDMs to speed up the predictions.  This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added. A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.
+Alternatively here is how to use the fitted SDM to create predictions. You can (optionally) pass in a fitted model. If you do not, the predict function will fit a SDM based on the `model` argument (e.g. `predict(sim1, model="gam")`). We will pass in the fitted SDMs to speed up the predictions.  This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added. A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.
 
 ```{r alt_pred, results='hide', message=FALSE, fig.show='hide'}
 pred.gam <- predict(sim1, p.sdm=gam.p, a.sdm=gam.a, newdata=new_dat)
@@ -242,6 +245,7 @@ p <- ggplot(abund, aes(x=year, y=abundance, color=model)) +
   geom_vline(xintercept=2020) +
   annotate("text", x=2020, y=max(abund$abundance), label="  forecast", hjust=0) +
   annotate("text", x=2020, y=max(abund$abundance), label="hindcast  ", hjust=1)
+p
 ```
 
 

@@ -47,14 +47,17 @@ lines(aggregate(abundance~year,dat[dat$year<=2020,],FUN="sum"),col="blue")
 plot(aggregate(temp~year,dat,FUN="mean"),type="l",ylab="Temperature", col="dark grey")
 
 ## ----fitmodels, results='hide', message=FALSE, fig.show='hide'----------------
-gam.p <- gam_sdm(sim1, covariates="temp", response="pres")
-gam.a <- gam_sdm(sim1, covariates="temp", response="abundance")
+gam.fit <- gam_sdm(sim1, covariates="temp")
+gam.p <- gam.fit$presence
+gam.a <- gam.fit$abundance
 
-brt.p <- brt_sdm(sim1, covariates="temp", response="pres")
-brt.a <- brt_sdm(sim1, covariates="temp", response="abundance")
+brt.fit <- brt_sdm(sim1, covariates="temp")
+brt.p <- brt.fit$presence
+brt.a <- brt.fit$abundance
 
-mlp.p <- mlp_sdm(sim1, covariates="temp", response="pres")
-mlp.a <- mlp_sdm(sim1, covariates="temp", response="abundance")
+mlp.fit <- mlp_sdm(sim1, covariates="temp")
+mlp.p <- mlp.fit$presence
+mlp.a <- mlp.fit$abundance
 
 ## -----------------------------------------------------------------------------
 new_dat <- data.frame(temp=seq(0,7,length=100))
@@ -141,6 +144,7 @@ p <- ggplot(abund, aes(x=year, y=abundance, color=model)) +
   geom_vline(xintercept=2020) +
   annotate("text", x=2020, y=max(abund$abundance), label="  forecast", hjust=0) +
   annotate("text", x=2020, y=max(abund$abundance), label="hindcast  ", hjust=1)
+p
 
 ## -----------------------------------------------------------------------------
 # First compute the true cog
