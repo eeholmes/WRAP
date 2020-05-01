@@ -1,6 +1,7 @@
 #' Predict for SDM object
 #' 
-#' Does a hindcast and forecast with SDM fit (sdm returned from one of the sdm
+#' Does a hindcast and forecast with SDM fit 
+#' (sdm returned from one of the sdm
 #' fitting functions). If abund_enviro is log-normal, then 
 #'  a presence model and an abundance model are fit. If 
 #'  abund_enviro is poisson, then only the abundance model is fit. Both a hindcast
@@ -16,24 +17,27 @@
 #' @param ... Not used.
 #' @method predict SDM
 #' @export
+#' 
+#' Adandoning this idea. If lognormal, then the fit does not have all the data. It only has the positive abundances. I could add the original data to the fit object, but that would make it huge.
 predict.SDM <- function(object, 
                        newdata=NULL,
                        start.forecast.year = 2021, 
                        alpha=0.6826895, silent=FALSE, ...) {
 
-  for(j in c("gam", "brt", "mlp")) if(inherits(mod, j)) model <- j
-  
   if(!inherits(object, "SDM")) stop("predict.SDM requires a SDM object as returned by one of the sdm fitting functions.")
-  abund_enviro <- object$meta$abund_enviro
-  ses <- qnorm((1+alpha)/2) #number of sigmas
+  
+  for(j in c("gam", "brt", "mlp")) if(inherits(object$presence, j)) model <- j
   
   if(!missing(newdata) && !inherits(newdata, "data.frame"))
     stop("newdata must be a data frame with the covariates in the simulation.")
   if(!missing(newdata) && !all(object$meta$covariates %in% colnames(newdata)))
     stop("newdata is missing some of the covariates. Check object$meta$covariates.")
   
+  abund_enviro <- object$meta$abund_enviro
+  ses <- qnorm((1+alpha)/2) #number of sigmas
+  
   if(missing(newdata)){
-    pred <- object$grid
+    if(model=="gam") pred <- object$grid
     n.hind <- sum(pred$year < start.forecast.year)
     n.fore <- sum(pred$year >= start.forecast.year)
     pred <- cbind(pred.type=c(rep("hindcast", n.hind), rep("forecast", n.fore)), pred)
@@ -43,24 +47,9 @@ predict.SDM <- function(object,
     pred <- cbind(pred.type=rep("newdata", nrow(pred)), pred)
   }
 
-  # Fit sdms if needed
-  if(abund_enviro!="poisson" & is.null(p.sdm)){
-    if(!silent) cat(paste0("Fitting presence sdm with ", model, "_sdm.\n"))
-    p.sdm <- switch(model,
-                    gam = gam_sdm(object, response="pres", k=k),
-                    brt = brt_sdm(object, response="pres"),
-                    mlp = mlp_sdm(object, response="pres")
-    )
-  }
-  if(is.null(a.sdm)){
-    if(!silent) cat(paste0("Fitting abundance sdm with ", model, "_sdm.\n"))
-    a.sdm <- switch(model,
-                    gam = gam_sdm(object, response="abundance", k=k),
-                    brt = brt_sdm(object, response="abundance"),
-                    mlp = mlp_sdm(object, response="abundance")
-    )
-  }
-  
+    p.sdm <- object$presence
+    a.sdm <- object$abundance
+
   # Do the predictions
   
   if(!silent) cat("Computing predictions.\n")
