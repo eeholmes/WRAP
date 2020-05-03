@@ -4,7 +4,7 @@
 ##' \itemize{
 ##'  \item Species A: distribution and abundance driven by SST and Chl-a
 ##'  \item Species B: distribution and abundance drivn by SST and Species A
-##'  \item EM for Species b: only have chl-a and temp as covariates. 
+##'  \item EM for Species B: only have chl-a and temp as covariates. 
 #' }
 #' Note only using GFDL for now
 #' 
@@ -19,8 +19,12 @@
 #' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
 #' @param dir (optional) The path to the directory where the folder 'gfdl' is.
 #' 
+#' @return Returns the grid for species B. This is an object of class \code{\link[=OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
+#' 
 #' @examples
+#' \dontrun{
 #' test <- SimulateWorld_ROMS_TrophicInteraction(PA_shape="logistic", abund_enviro="lnorm_low")
+#' }
 #' 
 #' @export
 #' 
@@ -48,8 +52,8 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
   #Assuming 400 'samples' are taken each year, from 1980-2100
   output <- as.data.frame(matrix(NA, nrow=48400,ncol=7))
   colnames(output) <- c("lon","lat","year","pres","suitability","sst", "chla")
-
-    #----Load in rasters----
+  
+  #----Load in rasters----
   # sst_dr and chl_dr were created at top
   
   files_sst <- list.files(sst_dr, full.names = TRUE, pattern=".grd") #should be 1452 files
@@ -62,8 +66,8 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
   for (y in august_indexes){
     print(paste0("Creating environmental simulation for Year ",years[y]))
     
-    sst <- raster(files_sst[y])
-    chla <- raster(files_chl[y])
+    sst <- raster::raster(files_sst[y])
+    chla <- raster::raster(files_chl[y])
     chla <- log(chla)
     # plot(sst)
     # plot(chla)
@@ -86,14 +90,14 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
     # virtualspecies::plotResponse(spA_suitability) #plot response curves
     
     #manually rescale
-    ref_max_sst <- dnorm(spA_parameters$sst$args[1], mean=spA_parameters$sst$args[1], sd=spA_parameters$sst$args[2]) #JS/BM: potential maximum suitability based on optimum temperature
-    ref_max_chl <- dnorm(spA_parameters$chla$args[1], mean=spA_parameters$chla$args[1], sd=spA_parameters$chla$args[2]) 
+    ref_max_sst <- stats::dnorm(spA_parameters$sst$args[1], mean=spA_parameters$sst$args[1], sd=spA_parameters$sst$args[2]) #JS/BM: potential maximum suitability based on optimum temperature
+    ref_max_chl <- stats::dnorm(spA_parameters$chla$args[1], mean=spA_parameters$chla$args[1], sd=spA_parameters$chla$args[2]) 
     ref_max <- ref_max_sst * ref_max_chl #simple multiplication of layers. 
     spA_suitability$suitab.raster <- (1/ref_max)*spA_suitability$suitab.raster #JS/BM: rescaling suitability, so the max suitbaility is only when optimum is encountered
     # plot(spA_suitability$suitab.raster) #plot habitat suitability
     # virtualspecies::plotResponse(spA_suitability) #plot response curves
-
-
+    
+    
     #----SPECIES B: assign response curve----
     #Species B: likes to eat Species A, and warmer temperatues
     
@@ -114,8 +118,8 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
     # virtualspecies::plotResponse(spB_suitability) #plot response curves
     
     #manually rescale
-    ref_max_sst <- dnorm(spB_parameters$sst$args[1], mean=spB_parameters$sst$args[1], sd=spB_parameters$sst$args[2]) #JS/BM: potential maximum suitability based on optimum temperature
-    ref_max_spA <- dnorm(spB_parameters$spA$args[1], mean=spB_parameters$spA$args[1], sd=spB_parameters$spA$args[2])
+    ref_max_sst <- stats::dnorm(spB_parameters$sst$args[1], mean=spB_parameters$sst$args[1], sd=spB_parameters$sst$args[2]) #JS/BM: potential maximum suitability based on optimum temperature
+    ref_max_spA <- stats::dnorm(spB_parameters$spA$args[1], mean=spB_parameters$spA$args[1], sd=spB_parameters$spA$args[2])
     # ref_max <- ref_max_sst * 0.5
     spB_suitability$suitab.raster <- (1/ref_max)*spB_suitability$suitab.raster #JS/BM: rescaling suitability, so the max suitbaility is only when optimum temp is encountered
     # plot(spB_suitability$suitab.raster) #plot habitat suitability
@@ -135,7 +139,7 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
     if (PA_shape == "logistic_prev") {
       #JS: relaxes logistic a little bit, by specifing reduced prevalence and fitting beta (test diff prevalence values, but 0.5 seems realistic)
       suitability_PA <- virtualspecies::convertToPA(
-        envirosuitability, 
+        spB_suitability, 
         PA.method = "probability", 
         beta = "random", alpha = -0.3, 
         species.prevalence = 0.5, plot = FALSE)
@@ -144,7 +148,7 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
     if (PA_shape == "linear") {
       #JS: relaxes knife-edge absence -> presence further; also specifies prevalence and fits 'b'
       suitability_PA <- virtualspecies::convertToPA(
-        envirosuitability, 
+        spB_suitability, 
         PA.method = "probability",
         prob.method = "linear", 
         a = NULL, b = NULL, 
@@ -162,7 +166,8 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
       detection.probability = 1,
       error.probability=0, 
       plot = FALSE)
-    df <- cbind(as.data.frame(round(presence.points$sample.points$x,1)),as.data.frame(round(presence.points$sample.points$y,1)))
+    df <- cbind(as.data.frame(round(presence.points$sample.points$x,1)),
+                as.data.frame(round(presence.points$sample.points$y,1)))
     colnames(df) <- c("x","y")
     
     #----Extract data for each year----
@@ -182,22 +187,22 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
   #----Create abundance as a function of the environment----
   if (abund_enviro == "lnorm_low") {
     # SB: values in Ecography paper. I think initially they were based on flounder in EBS but not sure if I edited them
-    output$abundance <- ifelse(output$pres==1,rlnorm(nrow(output),2,0.1)*output$suitability,0)
+    output$abundance <- ifelse(output$pres==1, stats::rlnorm(nrow(output),2,0.1)*output$suitability,0)
   }
   if (abund_enviro == "lnorm_high") {
     # EW: I'm cranking up the rlnorm parameters to make it more comparable to wc trawl survey estimates -- these new ones based on arrowtooth
     # SB: rlnorm parameters (6,1) were too large for estimation model. GAMs had explained deviance <10%. Other suggestions?
-    output$abundance <- ifelse(output$pres==1,rlnorm(nrow(output),6,1)*output$suitability,0)
+    output$abundance <- ifelse(output$pres==1, stats::rlnorm(nrow(output),6,1)*output$suitability,0)
   }
   if (abund_enviro == "poisson") {
     # JS: sample from a Poisson distbn, with suitability proportional to mean (slower, bc it re-samples distbn for each observation)
     maxN <- 50  #max mean abundance at highest suitability
-    output$abundance <- ifelse(output$pres==1,rpois(nrow(output),lambda=output$suitability*maxN),0)
+    output$abundance <- ifelse(output$pres==1, stats::rpois(nrow(output),lambda=output$suitability*maxN),0)
   } 
   
   # meta data is auto generated. You shouldn't need to edit
   meta=list(
-    version=packageVersion("WRAP"),
+    version=utils::packageVersion("WRAP"),
     func=deparse(as.list(match.call())[[1]]),
     call=deparse( sys.call() ),
     sim.seed=sim.seed,

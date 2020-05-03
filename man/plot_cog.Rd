@@ -9,7 +9,7 @@ plot_cog(x, ...)
 \arguments{
 \item{x}{An \code{\link[=OMclass]{OM}} object output by one of the simulation functions.}
 
-\item{...}{SDMs to compare. Must be output from one of the fitting functions:
+\item{...}{SDMs to compare. Must be an \link[=SDM_class]{SDM} object output from one of the fitting functions:
 \code{\link{gam_sdm}}, \code{\link{brt_sdm}}, or \code{\link{mlp_sdm}}.}
 }
 \description{

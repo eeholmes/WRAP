@@ -9,8 +9,7 @@
   model = c("gam", "brt", "mlp"),
   newdata = NULL,
   start.forecast.year = 2021,
-  p.sdm = NULL,
-  a.sdm = NULL,
+  sdm = NULL,
   alpha = 0.6826895,
   silent = FALSE,
   ...
@@ -19,15 +18,13 @@
 \arguments{
 \item{object}{OM object}
 
-\item{model}{Type of SDM. gam, brt or mlp}
+\item{model}{Type of SDM. gam, brt or mlp. Only needed if sdm is not passed in.}
 
 \item{newdata}{(optional) Optional new data frame over which to do the prediction.}
 
 \item{start.forecast.year}{The years equal or less will be used for fitting and the years greater than are the forecasted years.}
 
-\item{p.sdm}{(optional) Previously fitted presence model}
-
-\item{a.sdm}{(optional) Previously fitted abundance model}
+\item{sdm}{(optional) Previously fitted \link[=SDM_class]{SDM} model}
 
 \item{alpha}{The CIs alpha. Default is 1 sigma (alpha = 68\%)}
 
@@ -36,13 +33,27 @@
 \item{...}{Any extra parameters for the sdm fitting functions, for example k for \code{gam_sdm}}
 }
 \value{
-Invisibly returns a data frames with the prediction. If newdata is not passed in, then the hindcast and forecast prediction is returned. The "type" column has "hindcast" and "forecast" to indicate which is which. This data frame is the same shape as object$grid except the extra column "type". The first 6 rows of the prediction are printed unless silent=TRUE. If "newdata" is passed in then the prediction for the new data only is returned. "newdata" must be a data frame with the required covariates.
+Invisibly returns a data frames with the prediction. If 
+\code{newdata} is not passed in, then the hindcast and forecast prediction
+is returned. The "type" column has "hindcast" and "forecast" to indicate
+which is which. This data frame is the same shape as object$grid except
+the extra column "type". The first 6 rows of the prediction are printed
+unless silent=TRUE. If "newdata" is passed in then the prediction for
+the new data only is returned. "newdata" must be a data frame with
+the required covariates.
 }
 \description{
-Does a hindcast and forecast with OM model. Optionally previously fitted SDMs can passed
- in to avoid having to refit SDMs. If abund_enviro is log-normal, then the
- prediction requires both a presence model and 
- an abundance model. If these are not passed in, they will be fit using a `model` model. If 
- abund_enviro is poisson, then only the abundance model is needed. Both a hindcast
- and a forecast will be returned. If model is "gam", then 95% CIs will be returned also.
+Does a hindcast and forecast with \link[=OMclass]{OM} model. Optionally 
+a previously fitted SDM can be passed in
+ in to avoid having to refit the SDM. If sdm is not passed in, it will be
+  fit using
+ the \code{model} argument. 
+ Both a hindcast
+ and a forecast will be returned. If model is "gam", then 95% CIs will 
+ be returned also.
+}
+\examples{
+sim <- SimulateWorld()
+fit <- mlp_sdm(sim, "temp")
+pred <- predict(sim, sdm=fit)
 }

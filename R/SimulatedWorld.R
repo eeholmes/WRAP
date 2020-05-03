@@ -1,6 +1,6 @@
 #' Simulated World basic
 #' 
-#' Function to simulate species distribution and abundance with a linearly increasing temperature. The argument temp_diff specifies the range of temperature for the beginning and ending years (year 1 and year 100).
+#' Function to simulate species distribution and abundance with a linearly increasing temperature. The argument \code{temp_diff} specifies the range of temperature for the beginning and ending years (year 1 and year 100).
 #' 
 #' @param temp_diff specifies min and max temps at year 1 and year 100 (e.g. temp_diff=c(1,3,5,7) means year 1 varies from 1-3C and year 100 from 5-7C)
 #' @param temp_spatial specifies whether we have "simple" linear temp distbn (SB) or added "matern" variation (EW)
@@ -13,7 +13,7 @@
 #' @param response.curve The response curve passed to `virtualspecies::formatFunctions`. All covariates in `covariates` argument must have a response curve specified.
 #' @param verbose FALSE means print minimal progress, TRUE means print verbose progress output
 #' 
-#' @return Returns an object of class \code{\link[OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
+#' @return Returns an object of class \code{\link[=OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
 #' 
 #' @examples
 #' # use defaults
@@ -67,8 +67,8 @@ SimulateWorld <- function(
     
     #----Generate Temperature Covariate----
     temp_plain <- raster::raster(ncol=grid.size,nrow=grid.size)
-    ex <- extent(0.5,0.5+grid.size,0.5,0.5+grid.size)
-    extent(temp_plain) <- ex
+    ex <- raster::extent(0.5,0.5+grid.size,0.5,0.5+grid.size)
+    raster::extent(temp_plain) <- ex
     xy <- raster::coordinates(temp_plain)
     min <- temp_min_slope*y + temp_min_int 
     max <- temp_max_slope*y + temp_max_int
@@ -97,9 +97,9 @@ SimulateWorld <- function(
       temp <- temp_plain
     }
 
-    out <- capture.output(type="message",{
+    out <- utils::capture.output(type="message",{
     #----Use Virtual Species to assign response curve----
-    envir_stack <- stack(temp) #must be in raster stack format
+    envir_stack <- raster::stack(temp) #must be in raster stack format
     names(envir_stack) <- c('temp')
     
     #----assign response curve ----
@@ -109,7 +109,7 @@ SimulateWorld <- function(
     envirosuitability <- virtualspecies::generateSpFromFun(envir_stack,parameters=parameters, rescale = FALSE,rescale.each.response = FALSE)
     
     #rescale
-    ref_max <- dnorm(parameters$temp$args[1], mean=parameters$temp$args[1], sd=parameters$temp$args[2]) #JS/BM: potential maximum suitability based on optimum temperature
+    ref_max <- stats::dnorm(parameters$temp$args[1], mean=parameters$temp$args[1], sd=parameters$temp$args[2]) #JS/BM: potential maximum suitability based on optimum temperature
     envirosuitability$suitab.raster <- (1/ref_max)*envirosuitability$suitab.raster #JS/BM: rescaling suitability, so the max suitbaility is only when optimum temp is encountered
     
     #Plot suitability and response curve
@@ -146,7 +146,7 @@ SimulateWorld <- function(
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     }) #end capture output
-    if(verbose){out <- str_trim(out); cat(" ", out[out!=""], " ", sep="\n")}
+    if(verbose){out <- stringr::str_trim(out); cat(" ", out[out!=""], " ", sep="\n")}
     
     #----Extract suitability for each location----
     for (i in 1:grid.size^2){
@@ -167,17 +167,17 @@ SimulateWorld <- function(
   #----Create abundance as a function of the environment----
   if (abund_enviro == "lnorm_low") {
     # SB: values in Ecography paper. I think initially they were based on flounder in EBS but not sure if I edited them
-    grid$abundance <- ifelse(grid$pres==1,rlnorm(nrow(grid),2,0.1)*grid$suitability,0)
+    grid$abundance <- ifelse(grid$pres==1, stats::rlnorm(nrow(grid),2,0.1)*grid$suitability,0)
   }
   if (abund_enviro == "lnorm_high") {
     # EW: I'm cranking up the rlnorm parameters to make it more comparable to wc trawl survey estimates -- these new ones based on arrowtooth
     # SB: rlnorm parameters (6,1) were too large for estimation model. GAMs had explained deviance <10%. Other suggestions?
-    grid$abundance <- ifelse(grid$pres==1,rlnorm(nrow(grid),6,1)*grid$suitability,0)
+    grid$abundance <- ifelse(grid$pres==1, stats::rlnorm(nrow(grid),6,1)*grid$suitability,0)
   }
   if (abund_enviro == "poisson") {
     # JS: sample from a Poisson distbn, with suitability proportional to mean (slower, bc it re-samples distbn for each observation)
     maxN <- 20  #max mean abundance at highest suitability
-    grid$abundance <- ifelse(grid$pres==1,rpois(nrow(grid),lambda=grid$suitability*maxN),0)
+    grid$abundance <- ifelse(grid$pres==1, stats::rpois(nrow(grid),lambda=grid$suitability*maxN),0)
   } 
  
   #give years meaning (instead of 1:n.year)
@@ -186,7 +186,7 @@ SimulateWorld <- function(
   
   # The meta data is auto generated. You should not need to edit
   meta=list(
-    version=packageVersion("WRAP"),
+    version=utils::packageVersion("WRAP"),
     func=deparse(as.list(match.call())[[1]]),
     call=deparse( sys.call() ),
     sim.seed=sim.seed,

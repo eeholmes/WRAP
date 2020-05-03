@@ -61,6 +61,7 @@ reference:
     contents:
       - predict.OM
       - print.OM
+      - plot_cog
   - title: "Misc"
     desc: >
       Helper functions

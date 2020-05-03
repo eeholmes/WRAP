@@ -1,8 +1,9 @@
 #' Prints OM object
 #' 
-#' prints a OM object
+#' prints a \link[=OMclass]{OM} object returned from one of the simulation functions.
 #' 
 #' @param x OM object
+#' @param ... Not used
 #' @method print OM
 #' @export
 print.OM <- function(x, ...) {

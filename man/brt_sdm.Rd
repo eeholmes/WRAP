@@ -35,10 +35,9 @@ fit <- brt_sdm(sim, "temp")$abundance
 dev_eval(fit)
 plot(fit)
 
-# you can also pass in the grid from sim
-# this allows you to modify the grid (add 0s or error)
-bad.grid <- sim$grid
-bad.grid$abundance <- bad.grid$abundance + rnorm(nrow(bad.grid),0,0.05)
-fit <- brt_sdm(bad.grid, "temp")$abundance
+# modify the grid and fit
+bad.sim <- sim
+bad.sim$grid$abundance <- bad.sim$grid$abundance + rnorm(nrow(bad.sim$grid),0,0.05)
+fit <- brt_sdm(bad.sim, "temp")$abundance
 
 }

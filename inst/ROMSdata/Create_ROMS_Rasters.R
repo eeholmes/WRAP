@@ -37,7 +37,7 @@ for (f in 2:22){ #skipping bottom layer depth as it is a unique (and static)
   
   #Loop through every time step in ncdf
   for (i in 1:1452){
-    r <- raster(t(tmp.array[,,i]),
+    r <- raster::raster(t(tmp.array[,,i]),
                 xmn=min(lon), xmx=max(lon),
                 ymn=min(lat), ymx=max(lat), 
                 crs=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
@@ -62,7 +62,7 @@ for (f in 2:22){ #skipping bottom layer depth as it is a unique (and static)
     fname <- paste0(var[1],"_",var[2],"_",gcm_folder,"_",year[i],"_month",month_num,".grd")
     
     #save raster
-    writeRaster(r, paste0(folder,"/", fname))
+    raster::writeRaster(r, paste0(folder,"/", fname))
   }
   nc_close(nc)
 }

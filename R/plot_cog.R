@@ -26,13 +26,15 @@ plot_cog <- function(x, ...) {
   
   # First compute the true cog
   cog_lat <- x$grid %>% dplyr::group_by(year) %>% 
-    dplyr::summarize(cog=weighted.mean(x=lat, w=abundance))
+    dplyr::summarize(cog=stats::weighted.mean(x=lat, w=abundance))
   cog_lat <- cbind(model="true", cog_lat, stringsAsFactors = FALSE)
   
   nm <- length(sdms)
   if(nm != 0){
     for(i in 1:nm)
       if(!inherits(sdms[[i]], "SDM")) stop("plot_cog requires SDM objects as returned by one of the fitting functions. See ?plot_cog for info.")
+  fyr <- unique(unlist(lapply(sdms, function(x){x$meta$start.forecast.year})))
+  if(length(fyr) != 1) stop("The start.forecast.year in the SDM objects (x$meta) is different.")
     
     pred.all <- NULL
     for(i in 1:nm){
@@ -47,7 +49,7 @@ plot_cog <- function(x, ...) {
     
     # Now add the predicted cogs
     tmp <- pred.all %>% dplyr::group_by(model, year) %>% 
-      dplyr::summarize(cog=weighted.mean(x=lat, w=pred))
+      dplyr::summarize(cog=stats::weighted.mean(x=lat, w=pred))
     
     # dplyr uses tibbles and they return a matrix when you use rbind(). ug.
     # so use 
@@ -57,9 +59,9 @@ plot_cog <- function(x, ...) {
     geom_line() +
     ggtitle("Center of Gravity") +
     ylab("Centre of Gravity (deg lat)") +
-    geom_vline(xintercept=2020) +
-    annotate("text", x=2020, y=max(cog_lat$cog), label="  forecast", hjust=0) +
-    annotate("text", x=2020, y=max(cog_lat$cog), label="hindcast  ", hjust=1)
+    geom_vline(xintercept=fyr-0.5) +
+    annotate("text", x=fyr-0.5, y=max(cog_lat$cog), label="  forecast", hjust=0) +
+    annotate("text", x=fyr-0.5, y=max(cog_lat$cog), label="hindcast  ", hjust=1)
   
   p
 }

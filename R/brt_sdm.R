@@ -18,11 +18,10 @@
 #' dev_eval(fit)
 #' plot(fit)
 #' 
-#' # you can also pass in the grid from sim
-#' # this allows you to modify the grid (add 0s or error)
-#' bad.grid <- sim$grid
-#' bad.grid$abundance <- bad.grid$abundance + rnorm(nrow(bad.grid),0,0.05)
-#' fit <- brt_sdm(bad.grid, "temp")$abundance
+#' # modify the grid and fit
+#' bad.sim <- sim
+#' bad.sim$grid$abundance <- bad.sim$grid$abundance + rnorm(nrow(bad.sim$grid),0,0.05)
+#' fit <- brt_sdm(bad.sim, "temp")$abundance
 #' 
 #' @export
 brt_sdm <- function(x, covariates=NULL,
@@ -65,7 +64,7 @@ brt_sdm <- function(x, covariates=NULL,
   
   ## --- Abundance fit
   
-  if(str_detect(abund_enviro, "lnorm")){ 
+  if(stringr::str_detect(abund_enviro, "lnorm")){ 
     fam <- "gaussian"
     resp <- "log.abundance"
     dat_hist <- dat_hist[dat_hist$abundance>0,] }
@@ -82,7 +81,7 @@ brt_sdm <- function(x, covariates=NULL,
   # Add on the meta info from the OM object
   fit <- list(presence=fit.p, abundance=fit.a, 
               meta=c(x$meta, start.forecast.year=start.forecast.year) )
-  class(fit) <- c(class(fit), "brt", "SDM")
+  class(fit) <- c("SDM", "brt")
 
   return(fit)
 }

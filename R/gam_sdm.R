@@ -15,7 +15,7 @@
 #' @examples
 #' # use defaults
 #' sim <- SimulateWorld()
-#' fit <- gam_sdm(sim, "temp")
+#' fit <- gam_sdm(sim, "temp")$abundance
 #' summary(fit)
 #' plot(fit)
 #' 
@@ -60,7 +60,7 @@ gam_sdm <- function(x, covariates=NULL,
   
     frm.text <- paste0("s(", covariates, k.text, ", bs='gp')", collapse="+")
     frm.text <- paste("pres ~", frm.text)
-    fit.p <- mgcv::gam(as.formula(frm.text), data=dat_hist, family=binomial)
+    fit.p <- mgcv::gam(stats::as.formula(frm.text), data=dat_hist, family="binomial")
 
     # --- Abundance fit ---
     
@@ -69,7 +69,7 @@ gam_sdm <- function(x, covariates=NULL,
     # write formula as text so we don't have to know the covariate
     frm.text <- paste0("s(", covariates, k.text, ", bs='gp')", collapse="+")
     frm.text <- paste("log.abundance ~", frm.text)
-    fit.a <- mgcv::gam(as.formula(frm.text), data=dat_hist, family=gaussian)
+    fit.a <- mgcv::gam(stats::as.formula(frm.text), data=dat_hist, family="gaussian")
   }
   
   #Run if poisson response was simulated
@@ -77,12 +77,12 @@ gam_sdm <- function(x, covariates=NULL,
     # write formula as text so we don't have to know the covariate
     frm.text <- paste0("s(", covariates, k.text, ")", collapse="+")
     frm.text <- paste("round.abundance ~", frm.text)
-    fit.a <- mgcv::gam(as.formula(frm.text), data=dat_hist, family=poisson)
+    fit.a <- mgcv::gam(stats::as.formula(frm.text), data=dat_hist, family="poisson")
   }
   # Add on the meta info from the OM object
   fit <- list(presence=fit.p, abundance=fit.a, 
               meta=c(x$meta, start.forecast.year=start.forecast.year))
-  class(fit) <- c(class(fit), "SDM")
+  class(fit) <- c("SDM", "gam")
   
   return(fit)
 }

@@ -5,5 +5,8 @@
 #' fits SDMs.
 #' @keywords internal
 #' @importFrom dplyr "%>%"
+#' @import ggplot2
+#' @import virtualspecies
+#' @import stats
 "_PACKAGE"
 

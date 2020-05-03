@@ -52,7 +52,7 @@ mlp_sdm <- function(x, covariates=NULL,
   
   ## -- The presence fit
   frm.text <- paste("pres ~", paste(covariates, collapse=" + "))
-  fit.p <- neuralnet::neuralnet(as.formula(frm.text), 
+  fit.p <- neuralnet::neuralnet(stats::as.formula(frm.text), 
                                 data = dat_hist,
                                 hidden = control$hidden, 
                                 linear.output = FALSE, 
@@ -66,7 +66,7 @@ mlp_sdm <- function(x, covariates=NULL,
   }
   if (abund_enviro == "poisson") resp <- "round.abundance"
   frm.text <- paste(resp, "~", paste(covariates, collapse=" + "))
-  fit.a <- neuralnet::neuralnet(as.formula(frm.text), 
+  fit.a <- neuralnet::neuralnet(stats::as.formula(frm.text), 
                                 data = dat_hist,
                                 hidden = control$hidden, 
                                 linear.output = TRUE, 
@@ -76,7 +76,7 @@ mlp_sdm <- function(x, covariates=NULL,
   # Add on the meta info from the OM object
   fit <- list(presence=fit.p, abundance=fit.a, 
               meta=c(x$meta, start.forecast.year=start.forecast.year) )
-  class(fit) <- c(class(fit), "mlp", "SDM")
+  class(fit) <- c("SDM", "mlp")
 
   return(fit)
 }

@@ -8,7 +8,9 @@
 }
 \arguments{
 \item{x}{OM object}
+
+\item{...}{Not used}
 }
 \description{
-prints a OM object
+prints a \link[=OMclass]{OM} object returned from one of the simulation functions.
 }

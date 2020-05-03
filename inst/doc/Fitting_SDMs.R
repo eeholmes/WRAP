@@ -77,9 +77,9 @@ pred.mlp.p <- predict(mlp.p, dat_norm)
 pred.mlp.a <- predict(mlp.a, dat_norm)
 
 ## ----alt_pred, results='hide', message=FALSE, fig.show='hide'-----------------
-pred.gam <- predict(sim1, p.sdm=gam.p, a.sdm=gam.a, newdata=new_dat)
-pred.brt <- predict(sim1, p.sdm=brt.p, a.sdm=brt.a, newdata=new_dat)
-pred.mlp <- predict(sim1, p.sdm=mlp.p, a.sdm=mlp.a, newdata=new_dat)
+pred.gam <- predict(sim1, sdm=gam.fit, newdata=new_dat)
+pred.brt <- predict(sim1, sdm=brt.fit, newdata=new_dat)
+pred.mlp <- predict(sim1, sdm=mlp.fit, newdata=new_dat)
 
 ## -----------------------------------------------------------------------------
 par(mfrow=c(2,2), mar=c(3,4,4,2))
@@ -130,7 +130,7 @@ colnames(abund) <- c("year", "model", "abundance")
 
 # Add true abundance
 x <- sim1$grid
-if (abund_enviro == "poisson") x$abundance <- round(abundance)
+if (abund_enviro == "poisson") x$abundance <- round(x$abundance)
 tmp <- aggregate(abundance~year, x, FUN="sum")
 tmp$model <- "true"
 tmp <- tmp[,c("year", "model", "abundance")]
@@ -187,7 +187,7 @@ p1 <- ggplot(x, aes(lon, lat))+
   theme(legend.title=element_blank(),
         plot.title = element_text(hjust=0.5),
         panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  scale_fill_viridis()
+  viridis::scale_fill_viridis()
 
 #Gam
 x <- subset(pred.all, year==Y & model=="gam")
@@ -201,7 +201,7 @@ p2 <- ggplot(x, aes(lon,lat))+
   theme(legend.title=element_blank(),
         plot.title = element_text(hjust=0.5),
         panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  scale_fill_viridis()
+  viridis::scale_fill_viridis()
 
 #BRT
 x <- subset(pred.all, year==Y & model=="brt")
@@ -215,7 +215,7 @@ p3 <- ggplot(x, aes(lon,lat))+
   theme(legend.title=element_blank(),
         plot.title = element_text(hjust=0.5),
         panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  scale_fill_viridis()
+  viridis::scale_fill_viridis()
 
 #Gam
 x <- subset(pred.all, year==Y & model=="mlp")
@@ -229,7 +229,7 @@ p4 <- ggplot(x, aes(lon,lat))+
   theme(legend.title=element_blank(),
         plot.title = element_text(hjust=0.5),
         panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  scale_fill_viridis()
+  viridis::scale_fill_viridis()
 
 gridExtra::grid.arrange(p1, p2, p3, p4, nrow=2)
 

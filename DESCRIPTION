@@ -4,26 +4,26 @@ Title: WRAP Location Study
 Version: 1.3
 Date: 2020-04-21
 Depends: 
-  R (>= 2.15.0), 
-  virtualspecies,
+  R (>= 3.5.0), ggplot2, virtualspecies, stats, utils
+Imports:
+  dplyr,
   scales,
   raster,
   glmmfields,
   dismo,
   gbm,
   mgcv,
-  ggplot2,
   viridis,
   BBmisc,
   neuralnet,
   here,
-  stringr
-Suggests: knitr, rmarkdown, dplyr, gridExtra
-Imports: Rdpack
+  stringr,
+  Rdpack
+Suggests: knitr, rmarkdown, gridExtra
 Authors@R: c(person("Stephanie", "Brodie", role = c("aut", "cre"), email = "stephanie.brodie@noaa.gov"),
              person("James", "Smith", role = "aut", email = "james.smith@noaa.gov"),
              person("Eli", "Holmes", role = "aut", email = "eli.holmes@noaa.gov"))
-Description: WRAP project
+Description: This package functions to simulate and fit SDMs for the WRAP project.
 License: GPL-2
 LazyData: yes
 BuildVignettes: yes
