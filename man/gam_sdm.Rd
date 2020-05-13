@@ -27,7 +27,7 @@ in to change the smoothing.
 \examples{
 # use defaults
 sim <- SimulateWorld()
-fit <- gam_sdm(sim, "temp")
+fit <- gam_sdm(sim, "temp")$abundance
 summary(fit)
 plot(fit)
 
