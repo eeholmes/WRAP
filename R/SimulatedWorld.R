@@ -11,6 +11,7 @@
 #' @param n.year Number of years to simulate. Default is 100.
 #' @param start.year For showing results choose the start year.
 #' @param response.curve The response curve passed to `virtualspecies::formatFunctions`. All covariates in `covariates` argument must have a response curve specified.
+#' @param convertToPA.options Values to pass to `virtualspecies::convertToPA()` call. Defaults are linear=list(a=NULL, b=NULL, species.prevalence=0.8), logistic_prev=list(beta = "random", alpha = -0.3, species.prevalence = 0.5), logistic=list(beta=0.5, alpha=-0.05,species.prevalence=NULL)). To change, pass in a list with all the values for your PA_shape, e.g. list(a=1, b=0, species.prevalence=NULL) could be passed in if PA_shape is linear.
 #' @param verbose FALSE means print minimal progress, TRUE means print verbose progress output
 #' 
 #' @return Returns an object of class \code{\link[=OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
@@ -32,12 +33,17 @@ SimulateWorld <- function(
   covariates=c("temp"),
   grid.size=20, n.year=100, start.year=2000,
   response.curve=list(temp=c(fun="dnorm",mean=4,sd=1)),
+  convertToPA.options=list(
+    linear=list(a=NULL, b=NULL,species.prevalence=0.8), 
+    logistic_prev=list(beta="random", alpha=-0.3, species.prevalence=0.5),
+    logistic=list(beta=0.5, alpha=-0.05, species.prevalence=NULL)),
   verbose=FALSE){
   
   temp_spatial <- match.arg(temp_spatial)
   PA_shape <- match.arg(PA_shape)
   abund_enviro <- match.arg(abund_enviro)
   covariates <- match.arg(covariates, several.ok=TRUE)
+  if(missing(convertToPA.options)) convertToPA.options <- convertToPA.options[[PA_shape]]
   
   if(!all(covariates %in% names(response.curve)))
     stop("All the covariates must have a response curve specified.")
@@ -122,8 +128,9 @@ SimulateWorld <- function(
       suitability_PA <- virtualspecies::convertToPA(
         envirosuitability, 
         PA.method = "probability", 
-        beta = 0.5, alpha = -0.05, 
-        species.prevalence = NULL, plot = FALSE)
+        beta = convertToPA.options$beta, 
+        alpha = convertToPA.options$alpha, 
+        species.prevalence = convertToPA.options$species.prevalence, plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "logistic_prev") {
@@ -131,8 +138,10 @@ SimulateWorld <- function(
       suitability_PA <- virtualspecies::convertToPA(
         envirosuitability, 
         PA.method = "probability", 
-        beta = "random", alpha = -0.3,
-        species.prevalence = 0.5, plot = FALSE)
+        beta = convertToPA.options$beta, 
+        alpha = convertToPA.options$alpha,
+        species.prevalence = convertToPA.options$species.prevalence, 
+        plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }
     if (PA_shape == "linear") {
@@ -140,8 +149,8 @@ SimulateWorld <- function(
       suitability_PA <- virtualspecies::convertToPA(
         envirosuitability, PA.method = "probability",
         prob.method = "linear",
-        a = NULL, b = NULL,
-        species.prevalence = 0.8,
+        a = convertToPA.options$a, b = convertToPA.options$b,
+        species.prevalence = convertToPA.options$species.prevalence,
         plot = FALSE)
       # plotSuitabilityToProba(suitability_PA) #Let's you plot the shape of conversion function
     }

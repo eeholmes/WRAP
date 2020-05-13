@@ -8,23 +8,38 @@ SimulateWorld_ROMS(
   PA_shape = c("logistic", "logistic_prev", "linear"),
   abund_enviro = c("lnorm_low", "lnorm_high", "poisson"),
   covariates = c("sst"),
+  response.curve = list(sst = c(fun = "dnorm", mean = 15, sd = 4), chla = c(fun =
+    "dnorm", mean = 1.6, sd = 9)),
+  convertToPA.options = list(linear = list(a = NULL, b = NULL, species.prevalence =
+    0.8), logistic_prev = list(beta = "random", alpha = -0.3, species.prevalence = 0.5),
+    logistic = list(beta = 0.5, alpha = -0.05, species.prevalence = NULL)),
   dir = file.path(here::here(), "Rasters_2d_monthly"),
   roms.years = 1980:2100,
-  n.samples = 400
+  n.samples = 400,
+  maxN = 50,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{PA_shape}{specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)}
+\item{PA_shape}{specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences, also specifies prevalence and fits 'b')}
 
 \item{abund_enviro}{specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)}
 
 \item{covariates}{A vector with "sst" and/or "chla". One or both can be listed.}
+
+\item{response.curve}{The response curve to use in \code{virtualspecies::generateSpFromFun()} in the \code{parameter} argument to generate the suitability surface.}
+
+\item{convertToPA.options}{Values to pass to `virtualspecies::convertToPA()` call. Defaults are linear=list(a=NULL, b=NULL, species.prevalence=0.8), logistic_prev=list(beta = "random", alpha = -0.3, species.prevalence = 0.5), logistic=list(beta=0.5, alpha=-0.05,species.prevalence=NULL)). To change, pass in a list with all the values for your PA_shape, e.g. list(a=1, b=0, species.prevalence=NULL) could be passed in if PA_shape is linear.}
 
 \item{dir}{(optional) The path to the directory where the folder 'gfdl' is.}
 
 \item{roms.years}{The years for the ROMS data. The data files use the year and month. Default is 1980:2100.}
 
 \item{n.samples}{The number of samples to take from the ROMS layers each year. Default is 400.}
+
+\item{maxN}{max mean abundance at highest suitability}
+
+\item{verbose}{FALSE means print minimal progress, TRUE means print verbose progress output}
 }
 \value{
 Returns an object of class \code{\link[=OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
