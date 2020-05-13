@@ -19,7 +19,7 @@ Imports:
   here,
   stringr,
   Rdpack
-Suggests: knitr, rmarkdown, gridExtra
+Suggests: knitr, rmarkdown, gridExtra, testthat
 Authors@R: c(person("Stephanie", "Brodie", role = c("aut", "cre"), email = "stephanie.brodie@noaa.gov"),
              person("James", "Smith", role = "aut", email = "james.smith@noaa.gov"),
              person("Eli", "Holmes", role = "aut", email = "eli.holmes@noaa.gov"))
