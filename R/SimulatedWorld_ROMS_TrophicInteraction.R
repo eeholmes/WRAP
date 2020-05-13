@@ -2,22 +2,24 @@
 #' 
 #' This code replicates SimulateWorld_ROMS_function, but adds in a trophic interaction, where:
 ##' \itemize{
-##'  \item Species A: distribution and abundance driven by SST and Chl-a
+##'  \item Species A: distribution and abundance driven by SST and Chl-a. Suitability function is logistic.
 ##'  \item Species B: distribution and abundance drivn by SST and Species A
 ##'  \item EM for Species B: only have chl-a and temp as covariates. 
 #' }
 #' Note only using GFDL for now
 #' 
 #' The ROMS data are assumed to be in the working directory in a folder called
-#'  'Rasters_2d_monthly/gfdl/sst_monthly'. If the ROMS data folder is different,
-#'   you can pass that in via the 'dir' argument. However the ROMS data folder
-#'    must have subfolders 'gfdl/sst_monthly' so that 
-#'    'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.
+#'  'Rasters_2d_monthly' with subfolder 'gfdl'. If the ROMS data folder is different,
+#'   you can pass that in via the 'dir' argument. However the ROMS data folder must have subfolders 'gfdl/sst_monthly' and 'gfdl/chl_surface' so that 
+#'    it will find the SST and CHL ROMS data.
 #'    
-#' 
-#' @param PA_shape specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
-#' @param abund_enviro specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
+#' @param PA_shape specifies how enviro suitability determines species B presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)
+#' @param abund_enviro specifies abundance for species B (if present). Can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)
 #' @param dir (optional) The path to the directory where the folder 'gfdl' is.
+#' @param roms.years The years for the ROMS data. The data files use the year and month. Default is 1980:2100.
+#' @param n.samples The number of samples to take from the ROMS layers each year. Default is 400.
+#' @param maxN max mean abundance at highest suitability
+#' @param verbose FALSE means print minimal progress, TRUE means print verbose progress output
 #' 
 #' @return Returns the grid for species B. This is an object of class \code{\link[=OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
 #' 
@@ -31,7 +33,11 @@
 SimulateWorld_ROMS_TrophicInteraction <- function(
   PA_shape=c("logistic", "logistic_prev", "linear"), 
   abund_enviro=c("lnorm_low", "lnorm_high", "poisson"),
-  dir=file.path(here::here(),"Rasters_2d_monthly")){
+  dir=file.path(here::here(),"Rasters_2d_monthly"),
+  roms.years=1980:2100,
+  n.samples=400,
+  maxN=50,
+  verbose=FALSE){
   PA_shape <- match.arg(PA_shape)
   abund_enviro <- match.arg(abund_enviro)
   if(!dir.exists(dir))
@@ -46,32 +52,31 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
   
   # Record the seed used for simulation
   sim.seed <- .Random.seed
+  # number of ROMS years
+  n.year <- length(roms.years)
   
   # #----Create output file----
-  #####Needs to be modified as variables are added. Starting with sst
-  #Assuming 400 'samples' are taken each year, from 1980-2100
-  output <- as.data.frame(matrix(NA, nrow=48400,ncol=7))
-  colnames(output) <- c("lon","lat","year","pres","suitability","sst", "chla")
-  
+  #----Create output file----
+  output <- as.data.frame(matrix(NA, nrow=n.samples*n.year, ncol=7))
+  colnames(output) <- c("lon","lat","year","pres","suitability", "sst", "chla")
+
   #----Load in rasters----
   # sst_dr and chl_dr were created at top
   
   files_sst <- list.files(sst_dr, full.names = TRUE, pattern=".grd") #should be 1452 files
   files_chl <- list.files(chl_dr, full.names = TRUE, pattern=".grd") #should be 1452 files
-  months <- rep(1:12,121) 
-  years <- rep(1980:2100,each=12)
+  months <- rep(1:12, n.year) 
+  years <- rep(roms.years, each=12)
   august_indexes <- which(months==8) #picking last month in summer
   
   #loop through each year
   for (y in august_indexes){
-    print(paste0("Creating environmental simulation for Year ",years[y]))
+    if(verbose) print(paste0("Creating environmental simulation for Year ",years[y]))
     
     sst <- raster::raster(files_sst[y])
     chla <- raster::raster(files_chl[y])
     chla <- log(chla)
-    # plot(sst)
-    # plot(chla)
-    # 
+
     #----SPECIES A: assign response curve----
     #Species A: likes high chla and medium temps
     
@@ -83,7 +88,8 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
       sst = c(fun="dnorm", mean=12, sd=3),
       chla = c(fun="dnorm",mean=1.6,sd=9))
     spA_suitability <- virtualspecies::generateSpFromFun(
-      spA_stack,parameters=spA_parameters, 
+      spA_stack,
+      parameters=spA_parameters, 
       rescale = FALSE,
       rescale.each.response = FALSE) #Important: make sure rescaling is false. Doesn't work well in the 'for' loop. 
     # plot(spA_suitability$suitab.raster) #plot habitat suitability
@@ -161,7 +167,7 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
     #-----Sample Presences and Absences-----
     presence.points <- virtualspecies::sampleOccurrences(
       suitability_PA,
-      n = 400,
+      n = n.samples,
       type = "presence-absence",
       detection.probability = 1,
       error.probability=0, 
@@ -171,12 +177,12 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
     colnames(df) <- c("x","y")
     
     #----Extract data for each year----
-    print("Extracting suitability")
-    ei <- 400*which(august_indexes==y) #end location in output grid to index to
-    se <- ei - 399 #start location in output grid to index to
+    if(verbose) print("Extracting suitability")
+    ei <- n.samples*which(august_indexes==y) #end location in output grid to index to
+    se <- ei - (n.samples-1) #start location in output grid to index to
     output$lat[se:ei] <- df$y
     output$lon[se:ei] <- df$x
-    output$year[se:ei] <- rep(years[y],400)
+    output$year[se:ei] <- rep(years[y], n.samples)
     output$pres[se:ei] <-  presence.points$sample.points$Real
     output$suitability[se:ei] <- raster::extract(spB_suitability$suitab.raster, y= df)  #extract points from suitability file
     output$sst[se:ei] <-  raster::extract(sst, y= df)  #extract points from suitability file
@@ -196,7 +202,7 @@ SimulateWorld_ROMS_TrophicInteraction <- function(
   }
   if (abund_enviro == "poisson") {
     # JS: sample from a Poisson distbn, with suitability proportional to mean (slower, bc it re-samples distbn for each observation)
-    maxN <- 50  #max mean abundance at highest suitability
+    #maxN is mean abundance at highest suitability
     output$abundance <- ifelse(output$pres==1, stats::rpois(nrow(output),lambda=output$suitability*maxN),0)
   } 
   
