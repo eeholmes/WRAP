@@ -8,7 +8,8 @@ brt_sdm(
   x,
   covariates = NULL,
   start.forecast.year = 2021,
-  control = list(tree.complexity = 3, learning.rate = 0.01, bag.fraction = 0.6)
+  control = list(tree.complexity = 3, learning.rate = 0.01, bag.fraction = 0.6),
+  silent = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ brt_sdm(
 \item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years.}
 
 \item{control}{Parameters for the `dismo::gbm.step` call.}
+
+\item{silent}{Whether to output info from `dismo::gbm.step` during fitting.}
 }
 \value{
 A list with the presence and abundance fits and the meta data.
