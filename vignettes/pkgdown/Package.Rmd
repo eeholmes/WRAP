@@ -58,7 +58,7 @@ file.remove(file.path("Meta", "vignette.rds"))
 file.remove("Meta")
 ```
 
-Then make sure `doc` wasn't added to bottom of .gitignore. Then rebuild.  After that this will show the vignettes:
+Then make sure `doc` wasn't added to bottom of .gitignore. It probably was so remove 'doc' and then rebuild.  After that this will show the vignettes:
 
 ```
 vignette(package="WRAP")
