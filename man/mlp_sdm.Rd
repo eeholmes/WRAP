@@ -16,12 +16,12 @@ mlp_sdm(
 
 \item{covariates}{Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.}
 
-\item{start.forecast.year}{The years less will be used for fitting and the years greater than are the forecasted years}
+\item{start.forecast.year}{The years before `start.forecast.year` will be used for fitting (training data) and the years from `start.forecast.year` onward are the forecasted years (testing data)}
 
 \item{control}{The control parameters for the `neuralnet::neuralnet` call.}
 }
 \value{
-A list with the presence and abundance fits and the meta data.
+A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 }
 \description{
 Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.

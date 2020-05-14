@@ -16,7 +16,7 @@ gam_sdm(x, covariates = NULL, start.forecast.year = 2021, k = NULL)
 \item{k}{The smoothness of the fit can be restricted by passing in k. If left off, the default will be used.}
 }
 \value{
-A list with the presence and abundance fits and the meta data.
+A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 }
 \description{
 Build a gam species distribution model from the output from an operating model. 
@@ -26,12 +26,14 @@ in to change the smoothing.
 }
 \examples{
 # use defaults
-sim <- SimulateWorld()
+sim <- SimulateWorld(n.year=10)
 fit <- gam_sdm(sim, "temp")$abundance
 summary(fit)
 plot(fit)
+# plot center of gravity
+plot_cog(sim, fit)
 
-sim <- SimulateWorld_ROMS()
+sim <- SimulateWorld_ROMS(roms.years = 1980:1989)
 # presence fit
 fit <- gam_sdm(sim, "sst", k=4)$presence
 summary(fit)

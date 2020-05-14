@@ -24,7 +24,7 @@ brt_sdm(
 \item{silent}{Whether to output info from `dismo::gbm.step` during fitting.}
 }
 \value{
-A list with the presence and abundance fits and the meta data.
+A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 }
 \description{
 Build a boosted regression tree species distribution model from the output from a operating model using the dismo package. 
@@ -32,7 +32,7 @@ Models fit to both the
 presence (pres column) and log(abundance) are returned.
 }
 \examples{
-sim <- SimulateWorld()
+sim <- SimulateWorld(n.year=10)
 # abundance fit
 fit <- brt_sdm(sim, "temp")$abundance
 dev_eval(fit)
