@@ -9,15 +9,23 @@ plot_abund(x, ...)
 \arguments{
 \item{x}{An \code{\link[=OMclass]{OM}} object output by one of the simulation functions.}
 
-\item{...}{SDMs to compare. Must be an \link[=SDM_class]{SDM} object output from one of the fitting functions:
-\code{\link{gam_sdm}}, \code{\link{brt_sdm}}, or \code{\link{mlp_sdm}}.}
+\item{...}{SDMs to compare. Must be an \link[=SDM_class]{SDM} object output from one of the fitting functions (\code{\link{gam_sdm}},
+\code{\link{brt_sdm}}, or \code{\link{mlp_sdm}}) or \link[=POM_class]{POM} object output by \code{\link{predict.OM}}.}
 }
 \description{
 plots the total abundance versus time
 }
+\details{
+The SDMs which will be compared are \link[=SDM_class]{SDM} objects and
+ have the `start.forecast.year` as part of their meta data (in $meta).
+ The average abudance will be plotted for the training data (to which the SDM was fit) 
+ and the test data (after `start.forecast.year`). If `start.forecast.year`
+ is greater than the last year of data, then the forecast years are not
+ plotted (since there are not data for those years).
+}
 \examples{
 \dontrun{
-sim <- SimulateWorld()
+sim <- SimulateWorld(start.year=2015, n.year=20)
 mlp.fit <- mlp_sdm(sim, "temp")
 plot_abund(sim, mlp.fit)
 }
