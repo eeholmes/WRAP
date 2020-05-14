@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SDM fit with MLP — mlp_sdm • WRAP</title>
+<title>WRAP Package — WRAP-package • WRAP</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,9 @@
 
 
 
-<meta property="og:title" content="SDM fit with MLP — mlp_sdm" />
-<meta property="og:description" content="Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.
-Models fit to both the
-presence (pres column) and log(abundance) are returned." />
+<meta property="og:title" content="WRAP Package — WRAP-package" />
+<meta property="og:description" content="This package creates simulated presence/absence and abundance fields and
+fits SDMs." />
 
 
 
@@ -110,56 +109,19 @@ presence (pres column) and log(abundance) are returned." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>SDM fit with MLP</h1>
+    <h1>WRAP Package</h1>
     
-    <div class="hidden name"><code>mlp_sdm.Rd</code></div>
+    <div class="hidden name"><code>WRAP-package.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Build a MLP species distribution model from the output from a operating model (or grid) using the neuralnet package. The model is fit with 3 neurons in the hidden layer (which is good for this particular simulation). If it gets much more complicated, can try different values. But training time increases exponentially with additional neurons. The variables are normalized to a common scale before training the MLPs.
-Models fit to both the
-presence (pres column) and log(abundance) are returned.</p>
+    <p>This package creates simulated presence/absence and abundance fields and
+fits SDMs.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>mlp_sdm</span>(
-  <span class='no'>x</span>,
-  <span class='kw'>covariates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>start.forecast.year</span> <span class='kw'>=</span> <span class='fl'>2021</span>,
-  <span class='kw'>control</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>hidden</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>3</span>), <span class='kw'>algorithm</span> <span class='kw'>=</span> <span class='st'>"rprop+"</span>, <span class='kw'>threshold</span> <span class='kw'>=</span> <span class='fl'>0.2</span>)
-)</pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>x</th>
-      <td><p>(required) An operating model as output from one of the operating model functions (such as <code>sim &lt;- <a href='SimulateWorld.html'>SimulateWorld</a>()</code> OR list with meta$abund_enviro and grid from the operating model (<code>sim$grid</code>).</p></td>
-    </tr>
-    <tr>
-      <th>covariates</th>
-      <td><p>Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.</p></td>
-    </tr>
-    <tr>
-      <th>start.forecast.year</th>
-      <td><p>The years before `start.forecast.year` will be used for fitting (training data) and the years from `start.forecast.year` onward are the forecasted years (testing data)</p></td>
-    </tr>
-    <tr>
-      <th>control</th>
-      <td><p>The control parameters for the `neuralnet::neuralnet` call.</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <a href='SDM_class.html'>SDM</a> object, which is a list with the presence and abundance fits and the meta data.</p>
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='SimulateWorld.html'>SimulateWorld</a></span>()
-<span class='co'># abundance fit</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>mlp_sdm</span>(<span class='no'>sim</span>, <span class='st'>"temp"</span>)$<span class='no'>abundance</span>
-<span class='no'>dat</span> <span class='kw'>&lt;-</span> <span class='no'>fit</span>$<span class='no'>data</span> <span class='co'>#data used for fit</span>
-<span class='no'>dat</span>$<span class='no'>mlpAbun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span>(<span class='no'>fit</span>, <span class='no'>dat</span>)
-<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>dat</span>$<span class='no'>temp</span>, <span class='no'>dat</span>$<span class='no'>mlpAbun</span>)</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

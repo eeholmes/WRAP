@@ -41,9 +41,9 @@
 
 <meta property="og:title" content="Simulated World ROMS Trophic Interactions — SimulateWorld_ROMS_TrophicInteraction" />
 <meta property="og:description" content="This code replicates SimulateWorld_ROMS_function, but adds in a trophic interaction, where:
-Species A: distribution and abundance driven by SST and Chl-a
+Species A: distribution and abundance driven by SST and Chl-a. Suitability function is logistic.
 Species B: distribution and abundance drivn by SST and Species A
-EM for Species b: only have chl-a and temp as covariates.
+EM for Species B: only have chl-a and temp as covariates.
 Note only using GFDL for now" />
 
 
@@ -76,7 +76,7 @@ Note only using GFDL for now" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">WRAP</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3</span>
       </span>
     </div>
 
@@ -119,16 +119,20 @@ Note only using GFDL for now" />
 
     <div class="ref-description">
     <p>This code replicates SimulateWorld_ROMS_function, but adds in a trophic interaction, where:</p><ul>
-<li><p>Species A: distribution and abundance driven by SST and Chl-a</p></li>
+<li><p>Species A: distribution and abundance driven by SST and Chl-a. Suitability function is logistic.</p></li>
 <li><p>Species B: distribution and abundance drivn by SST and Species A</p></li>
-<li><p>EM for Species b: only have chl-a and temp as covariates.</p></li>
+<li><p>EM for Species B: only have chl-a and temp as covariates.</p></li>
 </ul><p>Note only using GFDL for now</p>
     </div>
 
     <pre class="usage"><span class='fu'>SimulateWorld_ROMS_TrophicInteraction</span>(
   <span class='kw'>PA_shape</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"logistic"</span>, <span class='st'>"logistic_prev"</span>, <span class='st'>"linear"</span>),
   <span class='kw'>abund_enviro</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"lnorm_low"</span>, <span class='st'>"lnorm_high"</span>, <span class='st'>"poisson"</span>),
-  <span class='kw'>dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw pkg'>here</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/here/man/here.html'>here</a></span>(), <span class='st'>"Rasters_2d_monthly"</span>)
+  <span class='kw'>dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw pkg'>here</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/here/man/here.html'>here</a></span>(), <span class='st'>"Rasters_2d_monthly"</span>),
+  <span class='kw'>roms.years</span> <span class='kw'>=</span> <span class='fl'>1980</span>:<span class='fl'>2100</span>,
+  <span class='kw'>n.samples</span> <span class='kw'>=</span> <span class='fl'>400</span>,
+  <span class='kw'>maxN</span> <span class='kw'>=</span> <span class='fl'>50</span>,
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -136,28 +140,48 @@ Note only using GFDL for now" />
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>PA_shape</th>
-      <td><p>specifies how enviro suitability determines species presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)</p></td>
+      <td><p>specifies how enviro suitability determines species B presence-absence. takes values of "logistic" (SB original), "logistic_prev" (JS, reduces knife-edge), "linear" (JS, reduces knife edge, encourages more absences)</p></td>
     </tr>
     <tr>
       <th>abund_enviro</th>
-      <td><p>specifies abundance if present, can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)</p></td>
+      <td><p>specifies abundance for species B (if present). Can be "lnorm_low" (SB original), "lnorm_high" (EW), or "poisson" (JS, increases abundance range)</p></td>
     </tr>
     <tr>
       <th>dir</th>
       <td><p>(optional) The path to the directory where the folder 'gfdl' is.</p></td>
     </tr>
+    <tr>
+      <th>roms.years</th>
+      <td><p>The years for the ROMS data. The data files use the year and month. Default is 1980:2100.</p></td>
+    </tr>
+    <tr>
+      <th>n.samples</th>
+      <td><p>The number of samples to take from the ROMS layers each year. Default is 400.</p></td>
+    </tr>
+    <tr>
+      <th>maxN</th>
+      <td><p>max mean abundance at highest suitability</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>FALSE means print minimal progress, TRUE means print verbose progress output</p></td>
+    </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>Returns the grid for species B. This is an object of class <code><a href='OMclass.html'>OM</a></code>, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The ROMS data are assumed to be in the working directory in a folder called
- 'Rasters_2d_monthly/gfdl/sst_monthly'. If the ROMS data folder is different,
-  you can pass that in via the 'dir' argument. However the ROMS data folder
-   must have subfolders 'gfdl/sst_monthly' so that 
-   'paste0(dir,"/gfdl/sst_monthly")' will find the SST ROMS data.</p>
+ 'Rasters_2d_monthly' with subfolder 'gfdl'. If the ROMS data folder is different,
+  you can pass that in via the 'dir' argument. However the ROMS data folder must have subfolders 'gfdl/sst_monthly' and 'gfdl/chl_surface' so that 
+   it will find the SST and CHL ROMS data.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='no'>test</span> <span class='kw'>&lt;-</span> <span class='fu'>SimulateWorld_ROMS_TrophicInteraction</span>(<span class='kw'>PA_shape</span><span class='kw'>=</span><span class='st'>"logistic"</span>, <span class='kw'>abund_enviro</span><span class='kw'>=</span><span class='st'>"lnorm_low"</span>)</pre>
+    <pre class="examples"><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='no'>test</span> <span class='kw'>&lt;-</span> <span class='fu'>SimulateWorld_ROMS_TrophicInteraction</span>(<span class='kw'>PA_shape</span><span class='kw'>=</span><span class='st'>"logistic"</span>, <span class='kw'>abund_enviro</span><span class='kw'>=</span><span class='st'>"lnorm_low"</span>)
+}</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
