@@ -54,11 +54,14 @@ predict.OM <- function(object, model=c("gam", "brt", "mlp"),
   
   if(!missing(sdm) && !inherits(sdm, "SDM"))
     stop("sdm must be a SDM object returned from one of the fitting functions. See ?SDM_class.")
+  if(!missing(sdm) && !missing(start.forecast.year) && sdm$meta$start.forecast.year != start.forecast.year)
+    cat("start.forecast.year does not match the value in the SDM meta data. start.forecast.year from the SDM is being used.")
+  if(!missing(sdm)) start.forecast.year <- sdm$meta$start.forecast.year
   
   if(!is.null(sdm)){
     oldmodel <- model
     model <- class(sdm$presence)[1]
-    if(model.passed.in && model != oldmodel) cat(paste0("model does not match the SDM. Ignorning model value and using ", model, "."))
+    if(model.passed.in && model != oldmodel) cat(paste0("model does not match the SDM. Ignoring model value and using ", model, "."))
     p.sdm <- sdm$presence
     a.sdm <- sdm$abundance
   }
@@ -77,13 +80,13 @@ predict.OM <- function(object, model=c("gam", "brt", "mlp"),
     pred <- cbind(pred.type=rep("newdata", nrow(pred)), pred)
   }
 
-  # Fit sdms if needed
+  # Fit sdm if needed
   if( is.null(sdm) ){
     if(!silent) cat(paste0("Fitting sdm with ", model, "_sdm.\n"))
     fit <- switch(model,
-                    gam = gam_sdm(object, k=k),
-                    brt = brt_sdm(object),
-                    mlp = mlp_sdm(object)
+        gam = gam_sdm(object, k=k, start.forecast.year=start.forecast.year),
+        brt = brt_sdm(object, start.forecast.year=start.forecast.year),
+        mlp = mlp_sdm(object, start.forecast.year=start.forecast.year)
     )
     p.sdm <- fit$presence
     a.sdm <- fit$abundance
@@ -149,6 +152,9 @@ predict.OM <- function(object, model=c("gam", "brt", "mlp"),
     print(utils::head(pred))
     cat(paste0(" ", nrow(pred)-6, " more rows...\n"))
   }
+  
+  class(pred) <- c(class(pred), "POM")
+  attr(pred, "start.forecast.year") <- start.forecast.year
   
   invisible(pred)
   
