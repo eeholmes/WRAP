@@ -1,8 +1,8 @@
 Package: WRAP
 Type: Package
 Title: WRAP Location Study
-Version: 1.3
-Date: 2020-04-21
+Version: 1.4
+Date: 2020-05-11
 Depends: 
   R (>= 3.5.0), ggplot2, virtualspecies, stats, utils
 Imports:
