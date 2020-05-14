@@ -26,6 +26,11 @@ This vignette shows how to fit SDMs with the **WRAP** package and make some basi
 
 Type `?gam_sdm`, etc, to learn about the arguments for the function.
 
+**WRAP** also includes some plotting functions 
+
+* `plot_cog()` Center of gravity
+* `plot_abund()` Average abundance
+
 # Example
 
 ```{r message=FALSE, warning=FALSE}
@@ -58,8 +63,10 @@ temp_diff <- c(1,4,3,7)
 Simulate species abundances from the simulated temperature fields.
 
 ```{r simworld, results='hide', message=FALSE}
-sim1 <- SimulateWorld(temp_diff = temp_diff,  temp_spatial = temp_spatial, 
-                      PA_shape = PA_shape, abund_enviro = abund_enviro) 
+sim1 <- SimulateWorld(temp_diff = temp_diff,  
+                      temp_spatial = temp_spatial, 
+                      PA_shape = PA_shape, 
+                      abund_enviro = abund_enviro) 
 ```
 
 Printing the output will show you basic information about the simulation. This information is in `sim1$meta`.
@@ -137,25 +144,7 @@ First we need to set up the temperatures used for prediction.
 new_dat <- data.frame(temp=seq(0,7,length=100))
 ```
 
-Then we will save our predictions from each model. We can do the predictions using our fitted models or we can use the OM object `sim` that was output from the simulation.
-
-Here is how to set up the simulation from the fitted SDM.
-```{r pred_fit1, results='hide', message=FALSE, fig.show='hide'}
-pred.gam.p <- predict(gam.p, newdata=new_dat, type="response")
-pred.gam.a <- predict(gam.a, newdata=new_dat, type="response")
-
-pred.brt.p <- predict(brt.p, newdata=new_dat, type="response",
-     n.trees=brt.p$gbm.call$best.trees)
-pred.brt.a <- predict(brt.a, newdata=new_dat, type="response",
-     n.trees=brt.a$gbm.call$best.trees)
-
-dat_norm <- new_dat
-dat_norm$temp <- BBmisc::normalize(dat_norm$temp)
-pred.mlp.p <- predict(mlp.p, dat_norm)
-pred.mlp.a <- predict(mlp.a, dat_norm)
-```
-
-Alternatively here is how to predict from the OM object returned from one of the simulation functions. You can (optionally) pass in a fitted model. If you do not, the predict function will fit a SDM based on the `model` argument (e.g. `predict(sim1, model="gam")`). We will pass in the fitted SDMs to speed up the predictions.  This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added. A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.
+The `predict.OM()` function will compute the predicted presence, abundance and expected abundance (pred presence x pred abundance). You can (optionally) pass in a fitted model. If you do not, the predict function will fit a SDM based on the `model` argument (e.g. `predict(sim1, model="gam")`). We will pass in the fitted SDMs to speed up the predictions.  This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added (pred is expected abundance = pred$pred.p*exp(pred$pred.a)). A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.
 
 ```{r alt_pred, results='hide', message=FALSE, fig.show='hide'}
 pred.gam <- predict(sim1, sdm=gam.fit, newdata=new_dat)
@@ -207,6 +196,14 @@ pred.brt2 <- predict(sim1, model="brt")
 pred.mlp2 <- predict(sim1, model="mlp")
 ```
 
+This will re-estimate the fitted models. This won't make a difference for gam and brt, but will for the mlp model with the default settings since that is a stochastic fit.  We will pass in our fits so that we use a known model.
+
+```{r pred_sdm, results='hide', fig.show='hide'}
+pred.gam2 <- predict(sim1, sdm=gam.fit)
+pred.brt2 <- predict(sim1, sdm=brt.fit)
+pred.mlp2 <- predict(sim1, sdm=mlp.fit)
+```
+
 Assemble the predictions into one data frame.
 ```{r}
 nr <- nrow(pred.gam2)
@@ -216,7 +213,15 @@ pred.all$model <- c(rep("gam", nr), rep("brt", nr), rep("mlp", nr))
 
 ## Compare abundance predictons
 
-First we create a data frame of the abundance predictions and true abundance.
+The function `plot_abund()` will plot the average abundances of the true data (from simulation) and the fitted models. The required argument is the simulated data (`sim1`), after that you can add as many fitted objects as you want to compare.
+
+```{r}
+plot_abund(sim1, gam.fit, mlp.fit, brt.fit)
+# You can also pass in predictions, which would be faster
+# plot_abund(sim1, pred.gam2, pred.mlp2, pred.brt2)
+```
+
+Here is how to compute these abundance plots without `plot_abund`. First we create a data frame of the abundance predictions and true abundance.
 
 ```{r}
 abund_enviro <- sim1$meta$abund_enviro
@@ -251,6 +256,17 @@ p
 
 ## Calculate and plot centre of gravity
 
+The function `plot_cog()` will plot the center of gravity of the true data (from simulation) and the fitted models. The required argument is the simulated data (`sim1`), after that you can add as many fitted objects as you want to compare.
+
+```{r}
+plot_cog(sim1, gam.fit, mlp.fit, brt.fit)
+# You can also pass in predictions
+# plot_cog(sim1, pred.gam2, pred.mlp2, pred.brt2)
+```
+
+Here is how to compute these COG plots without `plot_cog`. First we create a data frame of the COG predictions and true abundance.
+
+
 ```{r}
 # First compute the true cog
 library(dplyr)
@@ -262,7 +278,7 @@ cog_lat <- cbind(model="true", cog_lat, stringsAsFactors = FALSE)
 tmp <- pred.all %>% group_by(model, year) %>% 
   summarize(cog=weighted.mean(x=lat, w=pred))
 
-# dplyr uses tibbles and they return a matrix when you use rbind(). ug.
+# dplyr uses tibbles and they return a matrix when you use rbind().
 # so use 
 cog_lat <- dplyr::bind_rows(cog_lat, tmp)
 ```

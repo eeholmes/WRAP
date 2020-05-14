@@ -17,8 +17,10 @@ temp_spatial <- "matern"
 temp_diff <- c(1,4,3,7) 
 
 ## ----simworld, results='hide', message=FALSE----------------------------------
-sim1 <- SimulateWorld(temp_diff = temp_diff,  temp_spatial = temp_spatial, 
-                      PA_shape = PA_shape, abund_enviro = abund_enviro) 
+sim1 <- SimulateWorld(temp_diff = temp_diff,  
+                      temp_spatial = temp_spatial, 
+                      PA_shape = PA_shape, 
+                      abund_enviro = abund_enviro) 
 
 ## ----print_sim1---------------------------------------------------------------
 sim1
@@ -62,20 +64,6 @@ mlp.a <- mlp.fit$abundance
 ## -----------------------------------------------------------------------------
 new_dat <- data.frame(temp=seq(0,7,length=100))
 
-## ----pred_fit1, results='hide', message=FALSE, fig.show='hide'----------------
-pred.gam.p <- predict(gam.p, newdata=new_dat, type="response")
-pred.gam.a <- predict(gam.a, newdata=new_dat, type="response")
-
-pred.brt.p <- predict(brt.p, newdata=new_dat, type="response",
-     n.trees=brt.p$gbm.call$best.trees)
-pred.brt.a <- predict(brt.a, newdata=new_dat, type="response",
-     n.trees=brt.a$gbm.call$best.trees)
-
-dat_norm <- new_dat
-dat_norm$temp <- BBmisc::normalize(dat_norm$temp)
-pred.mlp.p <- predict(mlp.p, dat_norm)
-pred.mlp.a <- predict(mlp.a, dat_norm)
-
 ## ----alt_pred, results='hide', message=FALSE, fig.show='hide'-----------------
 pred.gam <- predict(sim1, sdm=gam.fit, newdata=new_dat)
 pred.brt <- predict(sim1, sdm=brt.fit, newdata=new_dat)
@@ -115,10 +103,20 @@ pred.gam2 <- predict(sim1, model="gam")
 pred.brt2 <- predict(sim1, model="brt")
 pred.mlp2 <- predict(sim1, model="mlp")
 
+## ----pred_sdm, results='hide', fig.show='hide'--------------------------------
+pred.gam2 <- predict(sim1, sdm=gam.fit)
+pred.brt2 <- predict(sim1, sdm=brt.fit)
+pred.mlp2 <- predict(sim1, sdm=mlp.fit)
+
 ## -----------------------------------------------------------------------------
 nr <- nrow(pred.gam2)
 pred.all <- rbind(pred.gam2, pred.brt2, pred.mlp2)
 pred.all$model <- c(rep("gam", nr), rep("brt", nr), rep("mlp", nr))
+
+## -----------------------------------------------------------------------------
+plot_abund(sim1, gam.fit, mlp.fit, brt.fit)
+# You can also pass in predictions, which would be faster
+# plot_abund(sim1, pred.gam2, pred.mlp2, pred.brt2)
 
 ## -----------------------------------------------------------------------------
 abund_enviro <- sim1$meta$abund_enviro
@@ -147,6 +145,11 @@ p <- ggplot(abund, aes(x=year, y=abundance, color=model)) +
 p
 
 ## -----------------------------------------------------------------------------
+plot_cog(sim1, gam.fit, mlp.fit, brt.fit)
+# You can also pass in predictions
+# plot_cog(sim1, pred.gam2, pred.mlp2, pred.brt2)
+
+## -----------------------------------------------------------------------------
 # First compute the true cog
 library(dplyr)
 cog_lat <- x %>% group_by(year) %>% 
@@ -157,7 +160,7 @@ cog_lat <- cbind(model="true", cog_lat, stringsAsFactors = FALSE)
 tmp <- pred.all %>% group_by(model, year) %>% 
   summarize(cog=weighted.mean(x=lat, w=pred))
 
-# dplyr uses tibbles and they return a matrix when you use rbind(). ug.
+# dplyr uses tibbles and they return a matrix when you use rbind().
 # so use 
 cog_lat <- dplyr::bind_rows(cog_lat, tmp)
 
