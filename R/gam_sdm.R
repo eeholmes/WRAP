@@ -10,16 +10,18 @@
 #' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years.
 #' @param k The smoothness of the fit can be restricted by passing in k. If left off, the default will be used.
 #' 
-#' @return A list with the presence and abundance fits and the meta data.
+#' @return A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 #' 
 #' @examples
 #' # use defaults
-#' sim <- SimulateWorld()
+#' sim <- SimulateWorld(n.year=10)
 #' fit <- gam_sdm(sim, "temp")$abundance
 #' summary(fit)
 #' plot(fit)
+#' # plot center of gravity
+#' plot_cog(sim, fit)
 #' 
-#' sim <- SimulateWorld_ROMS()
+#' sim <- SimulateWorld_ROMS(roms.years = 1980:1989)
 #' # presence fit
 #' fit <- gam_sdm(sim, "sst", k=4)$presence
 #' summary(fit)
@@ -33,8 +35,8 @@ gam_sdm <- function(x, covariates=NULL,
   if(!(c("abund_enviro") %in% names(x$meta))) stop("Something is wrong. x$meta needs 'abund_enviro' value.")
   abund_enviro <- x$meta$abund_enviro
   if(missing(covariates)) covariates <- x$meta$covariates
-  
   if(!all(covariates %in% colnames(x$grid))) stop("The operating model does not have all the covariates specified.")
+  if(start.forecast.year>(max(x$grid$year)+1)) cat("start.forecast.year is greater than the last year in the data. model will be fit to all the data.\n")
   
   # --- Data set-up section ----
   dat <- x$grid

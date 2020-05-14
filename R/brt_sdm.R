@@ -10,10 +10,10 @@
 #' @param control Parameters for the `dismo::gbm.step` call.
 #' @param silent Whether to output info from `dismo::gbm.step` during fitting.
 #' 
-#' @return A list with the presence and abundance fits and the meta data.
+#' @return A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 #'
 #' @examples
-#' sim <- SimulateWorld()
+#' sim <- SimulateWorld(n.year=10)
 #' # abundance fit
 #' fit <- brt_sdm(sim, "temp")$abundance
 #' dev_eval(fit)
@@ -37,6 +37,7 @@ brt_sdm <- function(x, covariates=NULL,
   if(missing(covariates)) covariates <- x$meta$covariates
   if(!all(covariates %in% colnames(x$grid))) stop("The operating model does not have all the covariates specified.")
   if(!all(c("tree.complexity", "learning.rate", "bag.fraction") %in% names(control))) stop("control needs to have tree.complexity, learning.rate and bag.fraction.")
+  if(start.forecast.year>(max(x$grid$year)+1)) cat("start.forecast.year is greater than the last year in the data. model will be fit to all the data.\n")
   
   # --- Data set-up section ----
   dat <- x$grid

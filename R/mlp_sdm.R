@@ -6,10 +6,10 @@
 
 #' @param x (required) An operating model as output from one of the operating model functions (such as \code{sim <- \link{SimulateWorld}()} OR list with meta$abund_enviro and grid from the operating model (\code{sim$grid}).
 #' @param covariates Covariates to use in the SDM. Must be in the operating model output (in the columns of x$grid). If left off, all covariates in x (in x$meta$covariates) are used.
-#' @param start.forecast.year The years less will be used for fitting and the years greater than are the forecasted years
+#' @param start.forecast.year The years before `start.forecast.year` will be used for fitting (training data) and the years from `start.forecast.year` onward are the forecasted years (testing data)
 #' @param control The control parameters for the `neuralnet::neuralnet` call.
 #'
-#' @return A list with the presence and abundance fits and the meta data.
+#' @return A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 #' 
 #' @examples
 #' sim <- SimulateWorld()
@@ -28,8 +28,8 @@ mlp_sdm <- function(x, covariates=NULL,
   if(!(c("abund_enviro") %in% names(x$meta))) stop("Something is wrong. x$meta needs 'abund_enviro' value.")
   abund_enviro <- x$meta$abund_enviro
   if(missing(covariates)) covariates <- x$meta$covariates
-  
   if(!all(covariates %in% colnames(x$grid))) stop("The operating model does not have all the covariates specified.")
+  if(start.forecast.year>(max(x$grid$year)+1)) cat("start.forecast.year is greater than the last year in the data. model will be fit to all the data.\n")
   
   # --- Data set-up section ----
   dat <- x$grid
