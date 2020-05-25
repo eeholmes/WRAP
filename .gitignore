@@ -22,6 +22,7 @@ ToDo.txt
 # RStudio files
 .Rproj.user/
 .Rproj
+*.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -43,3 +44,4 @@ inst/sandbox
 .Rproj.user
 Meta
 .DS_Store
+

@@ -2,26 +2,27 @@
 % Please edit documentation in R/plot_cog.R
 \name{plot_cog}
 \alias{plot_cog}
-\title{Plots COG from SDM}
+\title{Plot yearly COG}
 \usage{
 plot_cog(x, ...)
 }
 \arguments{
-\item{x}{An \code{\link[=OMclass]{OM}} object output by one of the simulation functions.}
+\item{x}{Object to plot. Can be a \link[=OM_class]{OM} or \link[=POM_class]{POM} object.}
 
-\item{...}{SDMs to compare. Must be an \link[=SDM_class]{SDM} object output from one of the fitting functions (\code{\link{gam_sdm}},
-\code{\link{brt_sdm}}, or \code{\link{mlp_sdm}}) or \link[=POM_class]{POM} object output by \code{\link{predict.OM}}.}
+\item{...}{more objects to compare. Can be a \link[=SDM_class]{SDM}, \link[=POM_class]{POM} or \link[=OM_class]{OM}.}
 }
 \description{
-plots the center of gravity versus time
+Plots the center of gravity versus year for objects of class OM (returned by simulations functions), SDM (returned by fitting functions) and/or POM (returned by predict function).
 }
 \details{
-The SDMs which will be compared are \link[=SDM_class]{SDM} objects and
- have the `start.forecast.year` as part of their meta data (in $meta).
- The COG will be plotted for the training data (to which the SDM was fit) 
- and the test data (after `start.forecast.year`). If `start.forecast.year`
- is greater than the last year of data, then the forecast years are not
- plotted (since there is not data for those years).
+If any of the objects to be compared are \link[=SDM_class]{SDM} objects, then x must be a
+OM object and predicts will be made for the grid points in the OM object.
+
+If the objects to be compared are \link[=SDM_class]{SDM} objects and
+ have the `start.forecast.year` as part of their meta data (in $meta), a reference 
+ line will be plotted showing the training versus test years.
+ If `start.forecast.year`
+ is greater than the last year of data, then no reference line will be plotted.
 }
 \examples{
 sim <- SimulateWorld(start.year=2015, n.year=20)

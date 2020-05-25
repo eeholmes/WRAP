@@ -30,7 +30,7 @@ SimulateWorld_ROMS_TrophicInteraction(
 \item{verbose}{FALSE means print minimal progress, TRUE means print verbose progress output}
 }
 \value{
-Returns the grid for species B. This is an object of class \code{\link[=OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
+Returns the grid for species B. This is an object of class \code{\link[=OM_class]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
 }
 \description{
 This code replicates SimulateWorld_ROMS_function, but adds in a trophic interaction, where:

@@ -12,5 +12,5 @@
 \item{...}{Not used}
 }
 \description{
-prints a \link[=OMclass]{OM} object returned from one of the simulation functions.
+prints a \link[=OM_class]{OM} object returned from one of the simulation functions.
 }

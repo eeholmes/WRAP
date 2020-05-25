@@ -42,7 +42,7 @@ SimulateWorld_ROMS(
 \item{verbose}{FALSE means print minimal progress, TRUE means print verbose progress output}
 }
 \value{
-Returns an object of class \code{\link[=OMclass]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
+Returns an object of class \code{\link[=OM_class]{OM}}, which is a list with "grid" and "meta". "meta" has all the information about the simulation including all the parameters passed into the function.
 }
 \description{
 Function uses covariate data from ROMS to generate species distribution and abundance.

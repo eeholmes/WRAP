@@ -29,8 +29,7 @@ Models fit to both the
 presence (pres column) and log(abundance) are returned.
 }
 \examples{
-sim <- SimulateWorld()
-# abundance fit
+sim <- SimulateWorld(start.year=2015, n.year=20)
 fit <- mlp_sdm(sim, "temp")$abundance
 dat <- fit$data #data used for fit
 dat$mlpAbun <- predict(fit, dat)

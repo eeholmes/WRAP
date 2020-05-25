@@ -27,16 +27,15 @@ in to change the smoothing.
 \examples{
 # use defaults
 sim <- SimulateWorld(n.year=10)
-fit <- gam_sdm(sim, "temp")$abundance
-summary(fit)
-plot(fit)
+fit <- gam_sdm(sim, "temp")
 # plot center of gravity
+\dontrun{ #plot center of gravity (slow)
 plot_cog(sim, fit)
+}
 
-sim <- SimulateWorld_ROMS(roms.years = 1980:1989)
 # presence fit
-fit <- gam_sdm(sim, "sst", k=4)$presence
-summary(fit)
-plot(fit)
+summary(fit$presence)
+# abundance fit
+summary(fit$abundance)
 
 }

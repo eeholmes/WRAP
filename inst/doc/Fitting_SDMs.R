@@ -20,7 +20,8 @@ temp_diff <- c(1,4,3,7)
 sim1 <- SimulateWorld(temp_diff = temp_diff,  
                       temp_spatial = temp_spatial, 
                       PA_shape = PA_shape, 
-                      abund_enviro = abund_enviro) 
+                      abund_enviro = abund_enviro,
+                      n.year=40, start.year=2015) 
 
 ## ----print_sim1---------------------------------------------------------------
 sim1
@@ -32,21 +33,8 @@ sim1
 ## ---- eval=FALSE--------------------------------------------------------------
 #  saveRDS(sim1, file=file.path(here::here(), "Sim1", "Sim1.rds"))
 
-## -----------------------------------------------------------------------------
-dat <- sim1$grid
-dat_hist <- dat[dat$year<=2020,]
-dat_fcast <- dat[dat$year>2020,]
-
-## ---- fig.height=6, fig.width=6-----------------------------------------------
-#All Years
-par(mfrow=c(2,2))
-plot(aggregate(suitability~year,dat,FUN="mean"),type="l", lwd=2, ylab="Suitability",col="dark grey")
-lines(aggregate(suitability~year,dat[dat$year<=2020,],FUN="mean"),col="blue")
-plot(aggregate(pres~year,dat,FUN="mean"),type="l", lwd=2,ylab="Presence",col="dark grey")
-lines(aggregate(pres~year,dat[dat$year<=2020,],FUN="mean"),col="blue")
-plot(aggregate(abundance~year,dat,FUN="sum"),type="l",  lwd=2,ylab="Abundance", col="dark grey")
-lines(aggregate(abundance~year,dat[dat$year<=2020,],FUN="sum"),col="blue")
-plot(aggregate(temp~year,dat,FUN="mean"),type="l",ylab="Temperature", col="dark grey")
+## ----plot-sim-----------------------------------------------------------------
+plot(sim1, start.forecast.year=2020)
 
 ## ----fitmodels, results='hide', message=FALSE, fig.show='hide'----------------
 gam.fit <- gam_sdm(sim1, covariates="temp")
@@ -69,7 +57,7 @@ pred.gam <- predict(sim1, sdm=gam.fit, newdata=new_dat)
 pred.brt <- predict(sim1, sdm=brt.fit, newdata=new_dat)
 pred.mlp <- predict(sim1, sdm=mlp.fit, newdata=new_dat)
 
-## -----------------------------------------------------------------------------
+## ----plot-pred----------------------------------------------------------------
 par(mfrow=c(2,2), mar=c(3,4,4,2))
 ylim2 <- 1.05*max(pred.gam$pred, pred.brt$pred, pred.mlp$pred)
 
@@ -113,126 +101,20 @@ nr <- nrow(pred.gam2)
 pred.all <- rbind(pred.gam2, pred.brt2, pred.mlp2)
 pred.all$model <- c(rep("gam", nr), rep("brt", nr), rep("mlp", nr))
 
-## -----------------------------------------------------------------------------
-plot_abund(sim1, gam.fit, mlp.fit, brt.fit)
-# You can also pass in predictions, which would be faster
-# plot_abund(sim1, pred.gam2, pred.mlp2, pred.brt2)
+## ----plott_sim1---------------------------------------------------------------
+plot(sim1)
 
-## -----------------------------------------------------------------------------
-abund_enviro <- sim1$meta$abund_enviro
+## ----plot-abund1--------------------------------------------------------------
+plot_abund(sim1, pred.gam2, pred.mlp2, pred.brt2)
 
-# sum up the abundance predictions across cells by year
-# model col is the model
-abund <- aggregate(pred~year+model, pred.all, FUN="sum")
-colnames(abund) <- c("year", "model", "abundance")
+## ----plot-cog1----------------------------------------------------------------
+plot_cog(sim1, pred.gam2, pred.mlp2, pred.brt2)
 
-# Add true abundance
-x <- sim1$grid
-if (abund_enviro == "poisson") x$abundance <- round(x$abundance)
-tmp <- aggregate(abundance~year, x, FUN="sum")
-tmp$model <- "true"
-tmp <- tmp[,c("year", "model", "abundance")]
+## ----plot-pres1---------------------------------------------------------------
+plot_pres(sim1, pred.gam2, pred.mlp2, pred.brt2)
 
-abund <- rbind(abund, tmp)
-
-## -----------------------------------------------------------------------------
-p <- ggplot(abund, aes(x=year, y=abundance, color=model)) + 
-  geom_line() +
-  ggtitle("Comparison of lnorm_low models") +
-  geom_vline(xintercept=2020) +
-  annotate("text", x=2020, y=max(abund$abundance), label="  forecast", hjust=0) +
-  annotate("text", x=2020, y=max(abund$abundance), label="hindcast  ", hjust=1)
-p
-
-## -----------------------------------------------------------------------------
-plot_cog(sim1, gam.fit, mlp.fit, brt.fit)
-# You can also pass in predictions
-# plot_cog(sim1, pred.gam2, pred.mlp2, pred.brt2)
-
-## -----------------------------------------------------------------------------
-# First compute the true cog
-library(dplyr)
-cog_lat <- x %>% group_by(year) %>% 
-  summarize(cog=weighted.mean(x=lat, w=abundance))
-cog_lat <- cbind(model="true", cog_lat, stringsAsFactors = FALSE)
-
-# Now add the model cogs
-tmp <- pred.all %>% group_by(model, year) %>% 
-  summarize(cog=weighted.mean(x=lat, w=pred))
-
-# dplyr uses tibbles and they return a matrix when you use rbind().
-# so use 
-cog_lat <- dplyr::bind_rows(cog_lat, tmp)
-
-## -----------------------------------------------------------------------------
-p <- ggplot(cog_lat, aes(x=year, y=cog, color=model)) + 
-  geom_line() +
-  ggtitle("Comparison of lnorm_low models") +
-  ylab("Centre of Gravity (deg lat)") +
-  geom_vline(xintercept=2020) +
-  annotate("text", x=2020, y=max(cog_lat$cog), label="  forecast", hjust=0) +
-  annotate("text", x=2020, y=max(cog_lat$cog), label="hindcast  ", hjust=1)
-
-p
-
-## ----surf_pred, fig.height=6, fig.width=6-------------------------------------
-#Future
-Y = 2021
-x <- subset(sim1$grid, year==Y)
-#Truth
-p1 <- ggplot(x, aes(lon, lat))+
-  geom_tile(aes(fill=abundance)) +
-  theme_classic() +
-  ggtitle("Truth")+
-  labs(y="Latitude") +
-  scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous( expand = c(0, 0)) +
-  theme(legend.title=element_blank(),
-        plot.title = element_text(hjust=0.5),
-        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  viridis::scale_fill_viridis()
-
-#Gam
-x <- subset(pred.all, year==Y & model=="gam")
-p2 <- ggplot(x, aes(lon,lat))+
-  geom_tile(aes(fill=pred)) +
-  theme_classic() +
-  ggtitle("GAM")+
-  labs(y="Latitude") +
-  scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous( expand = c(0, 0)) +
-  theme(legend.title=element_blank(),
-        plot.title = element_text(hjust=0.5),
-        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  viridis::scale_fill_viridis()
-
-#BRT
-x <- subset(pred.all, year==Y & model=="brt")
-p3 <- ggplot(x, aes(lon,lat))+
-  geom_tile(aes(fill=pred)) +
-  theme_classic() +
-  ggtitle("BRT")+
-  labs(y="Latitude") +
-  scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous( expand = c(0, 0)) +
-  theme(legend.title=element_blank(),
-        plot.title = element_text(hjust=0.5),
-        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  viridis::scale_fill_viridis()
-
-#Gam
-x <- subset(pred.all, year==Y & model=="mlp")
-p4 <- ggplot(x, aes(lon,lat))+
-  geom_tile(aes(fill=pred)) +
-  theme_classic() +
-  ggtitle("MLP")+
-  labs(y="Latitude") +
-  scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous( expand = c(0, 0)) +
-  theme(legend.title=element_blank(),
-        plot.title = element_text(hjust=0.5),
-        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-  viridis::scale_fill_viridis()
-
-gridExtra::grid.arrange(p1, p2, p3, p4, nrow=2)
+## ----plot-grid1---------------------------------------------------------------
+plot_grid(sim1, year=2021, pred.gam, pred.mlp, pred.brt)
+# You can also pass in SDMs but the predictions will be computed (slow)
+# plot_grid(sim1, year=2021, gam.fit, mlp.fit, brt.fit)
 

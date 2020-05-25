@@ -43,7 +43,7 @@ the new data only is returned. "newdata" must be a data frame with
 the required covariates.
 }
 \description{
-Does a hindcast and forecast with \link[=OMclass]{OM} model. Optionally 
+Does a hindcast and forecast with \link[=OM_class]{OM} model. Optionally 
 a previously fitted SDM can be passed in
  in to avoid having to refit the SDM. If sdm is not passed in, it will be
   fit using
@@ -53,7 +53,7 @@ a previously fitted SDM can be passed in
  be returned also.
 }
 \examples{
-sim <- SimulateWorld()
+sim <- SimulateWorld(start.year=2015, n.year=20)
 fit <- mlp_sdm(sim, "temp")
 pred <- predict(sim, sdm=fit)
 }

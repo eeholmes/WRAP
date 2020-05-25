@@ -32,7 +32,7 @@ Models fit to both the
 presence (pres column) and log(abundance) are returned.
 }
 \examples{
-sim <- SimulateWorld(n.year=10)
+sim <- SimulateWorld(start.year=2015, n.year=20)
 # abundance fit
 fit <- brt_sdm(sim, "temp")$abundance
 dev_eval(fit)
