@@ -1,6 +1,6 @@
 #' Predict for OM object
 #' 
-#' Does a hindcast and forecast with \link[=OMclass]{OM} model. Optionally 
+#' Does a hindcast and forecast with \link[=OM_class]{OM} model. Optionally 
 #' a previously fitted SDM can be passed in
 #'  in to avoid having to refit the SDM. If sdm is not passed in, it will be
 #'   fit using
@@ -28,7 +28,7 @@
 #' @param ... Any extra parameters for the sdm fitting functions, for example k for \code{gam_sdm}
 #' 
 #' @examples
-#' sim <- SimulateWorld()
+#' sim <- SimulateWorld(start.year=2015, n.year=20)
 #' fit <- mlp_sdm(sim, "temp")
 #' pred <- predict(sim, sdm=fit)
 
@@ -153,7 +153,7 @@ predict.OM <- function(object, model=c("gam", "brt", "mlp"),
     cat(paste0(" ", nrow(pred)-6, " more rows...\n"))
   }
   
-  class(pred) <- c(class(pred), "POM")
+  class(pred) <- c("POM", class(pred))
   attr(pred, "start.forecast.year") <- start.forecast.year
   
   invisible(pred)
