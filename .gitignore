@@ -22,7 +22,7 @@ ToDo.txt
 # RStudio files
 .Rproj.user/
 .Rproj
-*.Rproj
+WRAP.Rproj
 
 # produced vignettes
 vignettes/*.html
