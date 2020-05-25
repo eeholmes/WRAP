@@ -5,6 +5,7 @@
 #' fits SDMs.
 #' @keywords internal
 #' @importFrom dplyr "%>%"
+#' @importFrom rlang .data
 #' @import ggplot2
 #' @import virtualspecies
 #' @import stats
