@@ -30,5 +30,5 @@
 #' }
 #' 
 #' @docType class
-#' @name OMclass
+#' @name OM_class
 NULL
