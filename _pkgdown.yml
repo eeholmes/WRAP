@@ -27,12 +27,13 @@ articles:
     desc: >
       These vignettes provide an introduction to simulating presence/absence and 
       abundance grids using environmental variables and fitting Species Distribution
-      Models using the **WRAP** package.
+      Models using the **WRAP** package. Use 
+      `browseVignettes(package="WRAP")` to view the source code.
       
-      Download the Rmd files from https://github.com/eeholmes/WRAP/vignettes
     contents:
       - Run_OM
       - Fitting_SDMs
+      - Plotting
 
 reference:
   - title: "Simulating"
@@ -55,6 +56,7 @@ reference:
       - gam_sdm
       - brt_sdm
       - mlp_sdm
+      - print.SDM
       - SDM_class
   - title: "Predicting"
     desc: >
@@ -64,7 +66,7 @@ reference:
       object of class POM.
     contents:
       - predict.OM
-      - plot.OM
+      - plot.POM
       - POM_class
   - title: "OM Methods"
     desc: >

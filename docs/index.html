@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">WRAP</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.5</span>
       </span>
     </div>
 
@@ -109,11 +109,21 @@ The simulation functions return a <code>OM</code> object. There is a</p>
 <li>
 <code>print</code> method for <code>OM</code> objects. Type <code>sim</code> and basic info about the simulation is shown. Full information is in <code>sim$meta</code>.</li>
 </ul>
-<p>The functions to fit a SDM from a grid of covariates and abundances is</p>
+<p>The functions to fit a <code>SDM</code> from a grid of covariates and abundances is</p>
 <ul>
 <li><code>gam_sdm</code></li>
 <li><code>brt_sdm</code></li>
 <li><code>mlp_sdm</code></li>
+</ul>
+<p>The predict function will take a <code>SDM</code> and make hindcast and forecast predictions.</p>
+<p>The functions to plot are</p>
+<ul>
+<li><code>plot_abund</code></li>
+<li><code>plot_pres</code></li>
+<li><code>plot_cog</code></li>
+<li><code>plot_grid</code></li>
+<li>
+<code>plot</code> for OM and POM objects</li>
 </ul>
 </div>
 <div id="roms-data" class="section level2">

@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">WRAP</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.5</span>
       </span>
     </div>
 
@@ -151,7 +151,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="OMclass.html">OMclass</a></code> </p>
+          <p><code><a href="OM_class.html">OM_class</a></code> </p>
         </td>
         <td><p>OM class</p></td>
       </tr>
@@ -159,7 +159,7 @@
       <tr>
         <th colspan="2">
           <h2 id="section-fitting" class="hasAnchor"><a href="#section-fitting" class="anchor"></a>Fitting</h2>
-          <p class="section-desc"><p>Functions for fitting SDMs using GAMs, Boosted Regression Trees (BRT), and Neural Nets (MLP). These functions take as input, a OM object as returned by the simulation functions above. The OM object has information (in object$meta) about the simulation that is used in the fitting function.</p></p>
+          <p class="section-desc"><p>Functions for fitting SDMs using GAMs, Boosted Regression Trees (BRT), and Neural Nets (MLP). These functions take as input, a OM object as returned by the simulation functions above. The OM object has information (in object$meta) about the simulation that is used in the fitting function. The fitting functions return an object of class SDM that can be passed to prediction and plotting functions.</p></p>
         </th>
       </tr>
       
@@ -185,6 +185,49 @@
           <p><code><a href="mlp_sdm.html">mlp_sdm()</a></code> </p>
         </td>
         <td><p>SDM fit with MLP</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="print.SDM.html">print(<i>&lt;SDM&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Prints SDM object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="SDM_class.html">SDM_class</a></code> </p>
+        </td>
+        <td><p>SDM class</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-predicting" class="hasAnchor"><a href="#section-predicting" class="anchor"></a>Predicting</h2>
+          <p class="section-desc"><p>OMs can be passed to the predict function to create predictions. The model to use will be specified with the <code>model</code> argument. Alternatively a fitted model can be passed in and that will be used for prediction. The predict.OM function returns an object of class POM.</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="predict.OM.html">predict(<i>&lt;OM&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Predict for OM object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot.POM.html">plot(<i>&lt;POM&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Plots POM object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="POM_class.html">POM_class</a></code> </p>
+        </td>
+        <td><p>POM class</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -213,9 +256,33 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="plot.OM.html">plot(<i>&lt;OM&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Plots OM object</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="plot_cog.html">plot_cog()</a></code> </p>
         </td>
-        <td><p>Plots COG from SDM</p></td>
+        <td><p>Plot yearly COG</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_abund.html">plot_abund()</a></code> </p>
+        </td>
+        <td><p>Plot the total yearly abundance</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_grid.html">plot_grid()</a></code> </p>
+        </td>
+        <td><p>Plots grid of abundance from OM and SDMs</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_pres.html">plot_pres()</a></code> </p>
+        </td>
+        <td><p>Plots average yearly presence</p></td>
       </tr>
     </tbody><tbody>
       <tr>

@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">WRAP</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.5</span>
       </span>
     </div>
 
@@ -69,7 +69,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Fitting SDMs</h1>
             
-            <h4 class="date">2020-05-13</h4>
+            <h4 class="date">2020-05-25</h4>
       
       
       <div class="hidden name"><code>Fitting_SDMs.Rmd</code></div>
@@ -78,7 +78,7 @@
 
     
     
-<p>This vignette shows how to fit SDMs with the <strong>WRAP</strong> package and make some basic plots. The fitting functions in <strong>WRAP</strong> are</p>
+<p>This vignette shows how to fit SDMs with the <strong>WRAP</strong> package and make some basic plots. See the plotting vignette for more details on the plotting functions. The fitting functions in <strong>WRAP</strong> are</p>
 <ul>
 <li><code><a href="../reference/gam_sdm.html">gam_sdm()</a></code></li>
 <li><code><a href="../reference/brt_sdm.html">brt_sdm()</a></code></li>
@@ -92,13 +92,10 @@
 <li>
 <code><a href="../reference/plot_abund.html">plot_abund()</a></code> Average abundance</li>
 </ul>
-<div id="example" class="section level1">
-<h1 class="hasAnchor">
-<a href="#example" class="anchor"></a>Example</h1>
 <div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">WRAP</span>)</pre></body></html></div>
-<div id="simulate-data" class="section level2">
-<h2 class="hasAnchor">
-<a href="#simulate-data" class="anchor"></a>Simulate data</h2>
+<div id="simulate-data" class="section level1">
+<h1 class="hasAnchor">
+<a href="#simulate-data" class="anchor"></a>Simulate data</h1>
 <p>There are three simulation functions that can be used. <code><a href="../reference/SimulateWorld_ROMS.html">SimulateWorld_ROMS()</a></code> which uses ROMS for the environmental fields, <code>SimulateWorld_ROMS_TrophicInteractins()</code> which uses ROMS and trophic interactions, and <code><a href="../reference/SimulateWorld.html">SimulateWorld()</a></code> which simulates a temperature field.</p>
 <p>We will use <code><a href="../reference/SimulateWorld.html">SimulateWorld()</a></code> for this example. Type <code><a href="../reference/SimulateWorld.html">?SimulateWorld</a></code> as console to learn more about this function.</p>
 <p>Parameters for the function are</p>
@@ -123,19 +120,20 @@
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">sim1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/SimulateWorld.html">SimulateWorld</a></span>(<span class="kw">temp_diff</span> <span class="kw">=</span> <span class="no">temp_diff</span>,
                       <span class="kw">temp_spatial</span> <span class="kw">=</span> <span class="no">temp_spatial</span>,
                       <span class="kw">PA_shape</span> <span class="kw">=</span> <span class="no">PA_shape</span>,
-                      <span class="kw">abund_enviro</span> <span class="kw">=</span> <span class="no">abund_enviro</span>)</pre></body></html></div>
+                      <span class="kw">abund_enviro</span> <span class="kw">=</span> <span class="no">abund_enviro</span>,
+                      <span class="kw">n.year</span><span class="kw">=</span><span class="fl">40</span>, <span class="kw">start.year</span><span class="kw">=</span><span class="fl">2015</span>)</pre></body></html></div>
 <p>Printing the output will show you basic information about the simulation. This information is in <code>sim1$meta</code>.</p>
 <div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">sim1</span>
-<span class="co">## Simulated species abundance and suitability from WRAP version 1.3 and function SimulateWorld</span>
+<span class="co">## Simulated species abundance and suitability from WRAP version 1.5 and function SimulateWorld</span>
 <span class="co">##    covariates: temp</span>
 <span class="co">##    grid.dimensions: 20, 20, 400 (nrow, ncol, cells) </span>
 <span class="co">##    grid.resolution 1, 1 (x, y) </span>
 <span class="co">##    grid.extent 1, 20, 1, 20 (xmin, xmax, ymin, ymax) </span>
 <span class="co">##    grid.units: not applicable</span>
-<span class="co">##    time.extent: 2001:2100 year</span></pre></body></html></div>
-<div id="save-data" class="section level3">
-<h3 class="hasAnchor">
-<a href="#save-data" class="anchor"></a>Save data</h3>
+<span class="co">##    time.extent: 2016 to 2055 year</span></pre></body></html></div>
+<div id="save-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#save-data" class="anchor"></a>Save data</h2>
 <p>Since simulations take a long time to run, you may want to create a directory in your working directory for the simulations and save them there. Then you can reload the simulations instead of re-running.</p>
 <p>Create a directory for the simulations:</p>
 <div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="kw">if</span>(!<span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.exists</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw pkg">here</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/here/man/here.html">here</a></span>(), <span class="st">'Sim1'</span>)))
@@ -143,31 +141,18 @@
 <p>Save the simulation.</p>
 <div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span>(<span class="no">sim1</span>, <span class="kw">file</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw pkg">here</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/here/man/here.html">here</a></span>(), <span class="st">"Sim1"</span>, <span class="st">"Sim1.rds"</span>))</pre></body></html></div>
 </div>
-</div>
 <div id="plot-the-simulated-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#plot-the-simulated-data" class="anchor"></a>Plot the simulated data</h2>
-<p>Create a data frame with historical/forecast data. The data frame with the abundances and presence/absence is in <code>grid</code> in the simulation object returned by the function.</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">dat</span> <span class="kw">&lt;-</span> <span class="no">sim1</span>$<span class="no">grid</span>
-<span class="no">dat_hist</span> <span class="kw">&lt;-</span> <span class="no">dat</span>[<span class="no">dat</span>$<span class="no">year</span><span class="kw">&lt;=</span><span class="fl">2020</span>,]
-<span class="no">dat_fcast</span> <span class="kw">&lt;-</span> <span class="no">dat</span>[<span class="no">dat</span>$<span class="no">year</span><span class="kw">&gt;</span><span class="fl">2020</span>,]</pre></body></html></div>
-<p>Make some plots to explore the data. The simulated environmental covariate in <code>sim1</code> is <code>temp</code>.</p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="co">#All Years</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(<span class="kw">mfrow</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2</span>,<span class="fl">2</span>))
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">suitability</span>~<span class="no">year</span>,<span class="no">dat</span>,<span class="kw">FUN</span><span class="kw">=</span><span class="st">"mean"</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"l"</span>, <span class="kw">lwd</span><span class="kw">=</span><span class="fl">2</span>, <span class="kw">ylab</span><span class="kw">=</span><span class="st">"Suitability"</span>,<span class="kw">col</span><span class="kw">=</span><span class="st">"dark grey"</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">suitability</span>~<span class="no">year</span>,<span class="no">dat</span>[<span class="no">dat</span>$<span class="no">year</span><span class="kw">&lt;=</span><span class="fl">2020</span>,],<span class="kw">FUN</span><span class="kw">=</span><span class="st">"mean"</span>),<span class="kw">col</span><span class="kw">=</span><span class="st">"blue"</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">pres</span>~<span class="no">year</span>,<span class="no">dat</span>,<span class="kw">FUN</span><span class="kw">=</span><span class="st">"mean"</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"l"</span>, <span class="kw">lwd</span><span class="kw">=</span><span class="fl">2</span>,<span class="kw">ylab</span><span class="kw">=</span><span class="st">"Presence"</span>,<span class="kw">col</span><span class="kw">=</span><span class="st">"dark grey"</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">pres</span>~<span class="no">year</span>,<span class="no">dat</span>[<span class="no">dat</span>$<span class="no">year</span><span class="kw">&lt;=</span><span class="fl">2020</span>,],<span class="kw">FUN</span><span class="kw">=</span><span class="st">"mean"</span>),<span class="kw">col</span><span class="kw">=</span><span class="st">"blue"</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">abundance</span>~<span class="no">year</span>,<span class="no">dat</span>,<span class="kw">FUN</span><span class="kw">=</span><span class="st">"sum"</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"l"</span>,  <span class="kw">lwd</span><span class="kw">=</span><span class="fl">2</span>,<span class="kw">ylab</span><span class="kw">=</span><span class="st">"Abundance"</span>, <span class="kw">col</span><span class="kw">=</span><span class="st">"dark grey"</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">abundance</span>~<span class="no">year</span>,<span class="no">dat</span>[<span class="no">dat</span>$<span class="no">year</span><span class="kw">&lt;=</span><span class="fl">2020</span>,],<span class="kw">FUN</span><span class="kw">=</span><span class="st">"sum"</span>),<span class="kw">col</span><span class="kw">=</span><span class="st">"blue"</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">temp</span>~<span class="no">year</span>,<span class="no">dat</span>,<span class="kw">FUN</span><span class="kw">=</span><span class="st">"mean"</span>),<span class="kw">type</span><span class="kw">=</span><span class="st">"l"</span>,<span class="kw">ylab</span><span class="kw">=</span><span class="st">"Temperature"</span>, <span class="kw">col</span><span class="kw">=</span><span class="st">"dark grey"</span>)</pre></body></html></div>
-<p><img src="Fitting_SDMs_files/figure-html/unnamed-chunk-6-1.png" width="576"></p>
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="no">sim1</span>, <span class="kw">start.forecast.year</span><span class="kw">=</span><span class="fl">2020</span>)</pre></body></html></div>
+<p><img src="Fitting_SDMs_files/figure-html/plot-sim-1.png" width="576"></p>
 </div>
-<div id="fit-sdms-to-the-simulated-grid" class="section level2">
-<h2 class="hasAnchor">
-<a href="#fit-sdms-to-the-simulated-grid" class="anchor"></a>Fit SDMs to the simulated grid</h2>
+</div>
+<div id="fit-sdms-to-the-simulated-grid" class="section level1">
+<h1 class="hasAnchor">
+<a href="#fit-sdms-to-the-simulated-grid" class="anchor"></a>Fit SDMs to the simulated grid</h1>
 <p>We will fit GAM, BRT and MLP SDM models to the simulated grids. The fit function will fit the correct model (lognormal or poisson) based on the value of <code>abund_enviro</code>. If you want to restrict the smoothing, you can pass in <code>k</code> to the GAM function. The default fitting period is years prior to 2021 (<code>start.forecast.year=2021</code>). The fitting function will return both the presence and abundance models.</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">gam.fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/gam_sdm.html">gam_sdm</a></span>(<span class="no">sim1</span>, <span class="kw">covariates</span><span class="kw">=</span><span class="st">"temp"</span>)
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">gam.fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/gam_sdm.html">gam_sdm</a></span>(<span class="no">sim1</span>, <span class="kw">covariates</span><span class="kw">=</span><span class="st">"temp"</span>)
 <span class="no">gam.p</span> <span class="kw">&lt;-</span> <span class="no">gam.fit</span>$<span class="no">presence</span>
 <span class="no">gam.a</span> <span class="kw">&lt;-</span> <span class="no">gam.fit</span>$<span class="no">abundance</span>
 
@@ -179,21 +164,20 @@
 <span class="no">mlp.p</span> <span class="kw">&lt;-</span> <span class="no">mlp.fit</span>$<span class="no">presence</span>
 <span class="no">mlp.a</span> <span class="kw">&lt;-</span> <span class="no">mlp.fit</span>$<span class="no">abundance</span></pre></body></html></div>
 </div>
-<div id="create-predictions" class="section level2">
-<h2 class="hasAnchor">
-<a href="#create-predictions" class="anchor"></a>Create Predictions</h2>
+<div id="create-predictions-for-a-new-covariate-range" class="section level1">
+<h1 class="hasAnchor">
+<a href="#create-predictions-for-a-new-covariate-range" class="anchor"></a>Create Predictions for a new covariate range</h1>
 <p>Now plot the comparison of the models for temperaturs 0 to 7C.</p>
 <p>First we need to set up the temperatures used for prediction.</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">new_dat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">temp</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,<span class="fl">7</span>,<span class="kw">length</span><span class="kw">=</span><span class="fl">100</span>))</pre></body></html></div>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">new_dat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">temp</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,<span class="fl">7</span>,<span class="kw">length</span><span class="kw">=</span><span class="fl">100</span>))</pre></body></html></div>
 <p>The <code><a href="../reference/predict.OM.html">predict.OM()</a></code> function will compute the predicted presence, abundance and expected abundance (pred presence x pred abundance). You can (optionally) pass in a fitted model. If you do not, the predict function will fit a SDM based on the <code>model</code> argument (e.g. <code><a href="https://rdrr.io/r/stats/predict.html">predict(sim1, model="gam")</a></code>). We will pass in the fitted SDMs to speed up the predictions. This predict function for a OM object returns a data frame with pred.p, pred.a, pred and CIs added (pred is expected abundance = pred<span class="math inline">\(pred.p*exp(pred\)</span>pred.a)). A column pred.type indicates the type of prediction: hindcast, forecast, or newdata.</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">pred.gam</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">gam.fit</span>, <span class="kw">newdata</span><span class="kw">=</span><span class="no">new_dat</span>)
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">pred.gam</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">gam.fit</span>, <span class="kw">newdata</span><span class="kw">=</span><span class="no">new_dat</span>)
 <span class="no">pred.brt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">brt.fit</span>, <span class="kw">newdata</span><span class="kw">=</span><span class="no">new_dat</span>)
 <span class="no">pred.mlp</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">mlp.fit</span>, <span class="kw">newdata</span><span class="kw">=</span><span class="no">new_dat</span>)</pre></body></html></div>
-</div>
 <div id="plot-predictions" class="section level2">
 <h2 class="hasAnchor">
 <a href="#plot-predictions" class="anchor"></a>Plot Predictions</h2>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(<span class="kw">mfrow</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2</span>,<span class="fl">2</span>), <span class="kw">mar</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">4</span>,<span class="fl">2</span>))
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(<span class="kw">mfrow</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2</span>,<span class="fl">2</span>), <span class="kw">mar</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">4</span>,<span class="fl">2</span>))
 <span class="no">ylim2</span> <span class="kw">&lt;-</span> <span class="fl">1.05</span>*<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">pred.gam</span>$<span class="no">pred</span>, <span class="no">pred.brt</span>$<span class="no">pred</span>, <span class="no">pred.mlp</span>$<span class="no">pred</span>)
 
 <span class="co">#actual TPC</span>
@@ -218,165 +202,63 @@
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="no">new_dat</span>$<span class="no">temp</span>, <span class="no">pred.mlp</span>$<span class="no">pred</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"l"</span>,
      <span class="kw">main</span><span class="kw">=</span><span class="st">"lnorm_low MLP"</span>, <span class="kw">xlim</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>,<span class="fl">8</span>), <span class="kw">col</span><span class="kw">=</span><span class="st">"red"</span>, <span class="kw">lty</span><span class="kw">=</span><span class="fl">2</span>, <span class="kw">ylim</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>,<span class="no">ylim2</span>), <span class="kw">ylab</span><span class="kw">=</span><span class="st">"Abundance"</span>, <span class="kw">xlab</span><span class="kw">=</span><span class="st">"Temp"</span>)
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span>(<span class="no">new_dat</span>$<span class="no">temp</span>, <span class="no">pred.mlp</span>$<span class="no">pred</span>, <span class="kw">lwd</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
-<p><img src="Fitting_SDMs_files/figure-html/unnamed-chunk-8-1.png" width="576"></p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r">
+<p><img src="Fitting_SDMs_files/figure-html/plot-pred-1.png" width="576"></p>
+<div class="sourceCode" id="cb12"><html><body><pre class="r">
 <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(<span class="kw">mfrow</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>,<span class="fl">1</span>))</pre></body></html></div>
 </div>
-<div id="make-hindcast-and-forecast-predictions" class="section level2">
-<h2 class="hasAnchor">
-<a href="#make-hindcast-and-forecast-predictions" class="anchor"></a>Make Hindcast and Forecast predictions</h2>
+</div>
+<div id="make-predictions-for-the-years-and-values-in-the-simulation" class="section level1">
+<h1 class="hasAnchor">
+<a href="#make-predictions-for-the-years-and-values-in-the-simulation" class="anchor"></a>Make predictions for the years and values in the simulation</h1>
 <p>If <code>newdata</code> is left off, <code><a href="https://rdrr.io/r/stats/predict.html">predict(sim)</a></code> where <code>sim</code> is the output from one of the simulation functions (operating model) will return a data frame with a hindcast for years before start.forecast.year and a forecast after that. See <code><a href="../reference/predict.OM.html">?predict.OM</a></code> for other arguments that this function takes.</p>
 <p>You can pass in a previously fitted SDM to speed up the function as we did before. But you can leave these off and <code>predict</code> will fit the SDM based on the value in <code>sim$meta$abund_enviro</code>. Specify the SDM model with argument <code>model</code>.</p>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">pred.gam2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">model</span><span class="kw">=</span><span class="st">"gam"</span>)
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">pred.gam2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">model</span><span class="kw">=</span><span class="st">"gam"</span>)
 <span class="no">pred.brt2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">model</span><span class="kw">=</span><span class="st">"brt"</span>)
 <span class="no">pred.mlp2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">model</span><span class="kw">=</span><span class="st">"mlp"</span>)</pre></body></html></div>
-<p>This will re-estimate the fitted models. This won’t make a difference for gam and brt, but will for the mlp model with the default settings since that is a stochastic fit. We will pass in our fits so that we use a known model.</p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">pred.gam2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">gam.fit</span>)
+<p>This will re-estimate the fitted models. This won’t make a difference for gam and brt, but will for the mlp model with the default settings since that is a stochastic fit. We can pass in our fits so that we use a known model.</p>
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">pred.gam2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">gam.fit</span>)
 <span class="no">pred.brt2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">brt.fit</span>)
 <span class="no">pred.mlp2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span>(<span class="no">sim1</span>, <span class="kw">sdm</span><span class="kw">=</span><span class="no">mlp.fit</span>)</pre></body></html></div>
 <p>Assemble the predictions into one data frame.</p>
-<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="no">nr</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">pred.gam2</span>)
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">nr</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">pred.gam2</span>)
 <span class="no">pred.all</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span>(<span class="no">pred.gam2</span>, <span class="no">pred.brt2</span>, <span class="no">pred.mlp2</span>)
 <span class="no">pred.all</span>$<span class="no">model</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"gam"</span>, <span class="no">nr</span>), <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"brt"</span>, <span class="no">nr</span>), <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"mlp"</span>, <span class="no">nr</span>))</pre></body></html></div>
+<div id="plot-a-prediction" class="section level2">
+<h2 class="hasAnchor">
+<a href="#plot-a-prediction" class="anchor"></a>Plot a prediction</h2>
+<p>Ploting the object will show the yearly averages.</p>
+<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="no">sim1</span>)</pre></body></html></div>
+<p><img src="Fitting_SDMs_files/figure-html/plott_sim1-1.png" width="576"></p>
 </div>
 <div id="compare-abundance-predictons" class="section level2">
 <h2 class="hasAnchor">
 <a href="#compare-abundance-predictons" class="anchor"></a>Compare abundance predictons</h2>
-<p>The function <code><a href="../reference/plot_abund.html">plot_abund()</a></code> will plot the average abundances of the true data (from simulation) and the fitted models. The required argument is the simulated data (<code>sim1</code>), after that you can add as many fitted objects as you want to compare.</p>
-<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_abund.html">plot_abund</a></span>(<span class="no">sim1</span>, <span class="no">gam.fit</span>, <span class="no">mlp.fit</span>, <span class="no">brt.fit</span>)
-<span class="co">## getting prediction with gam.fit </span>
-<span class="co">## getting prediction with mlp.fit </span>
-<span class="co">## getting prediction with brt.fit</span></pre></body></html></div>
-<p><img src="Fitting_SDMs_files/figure-html/unnamed-chunk-10-1.png" width="576"></p>
-<div class="sourceCode" id="cb18"><html><body><pre class="r"># You can also pass in predictions, which would be faster
-# plot_abund(sim1, pred.gam2, pred.mlp2, pred.brt2)</pre></body></html></div>
-<p>Here is how to compute these abundance plots without <code>plot_abund</code>. First we create a data frame of the abundance predictions and true abundance.</p>
-<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="no">abund_enviro</span> <span class="kw">&lt;-</span> <span class="no">sim1</span>$<span class="no">meta</span>$<span class="no">abund_enviro</span>
-
-<span class="co"># sum up the abundance predictions across cells by year</span>
-<span class="co"># model col is the model</span>
-<span class="no">abund</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">pred</span>~<span class="no">year</span>+<span class="no">model</span>, <span class="no">pred.all</span>, <span class="kw">FUN</span><span class="kw">=</span><span class="st">"sum"</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">abund</span>) <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"year"</span>, <span class="st">"model"</span>, <span class="st">"abundance"</span>)
-
-<span class="co"># Add true abundance</span>
-<span class="no">x</span> <span class="kw">&lt;-</span> <span class="no">sim1</span>$<span class="no">grid</span>
-<span class="kw">if</span> (<span class="no">abund_enviro</span> <span class="kw">==</span> <span class="st">"poisson"</span>) <span class="no">x</span>$<span class="no">abundance</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="no">x</span>$<span class="no">abundance</span>)
-<span class="no">tmp</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">abundance</span>~<span class="no">year</span>, <span class="no">x</span>, <span class="kw">FUN</span><span class="kw">=</span><span class="st">"sum"</span>)
-<span class="no">tmp</span>$<span class="no">model</span> <span class="kw">&lt;-</span> <span class="st">"true"</span>
-<span class="no">tmp</span> <span class="kw">&lt;-</span> <span class="no">tmp</span>[,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"year"</span>, <span class="st">"model"</span>, <span class="st">"abundance"</span>)]
-
-<span class="no">abund</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span>(<span class="no">abund</span>, <span class="no">tmp</span>)</pre></body></html></div>
-<p>Next we plot</p>
-<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="no">p</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">abund</span>, <span class="fu">aes</span>(<span class="kw">x</span><span class="kw">=</span><span class="no">year</span>, <span class="kw">y</span><span class="kw">=</span><span class="no">abundance</span>, <span class="kw">color</span><span class="kw">=</span><span class="no">model</span>)) +
-  <span class="fu">geom_line</span>() +
-  <span class="fu">ggtitle</span>(<span class="st">"Comparison of lnorm_low models"</span>) +
-  <span class="fu">geom_vline</span>(<span class="kw">xintercept</span><span class="kw">=</span><span class="fl">2020</span>) +
-  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="kw">x</span><span class="kw">=</span><span class="fl">2020</span>, <span class="kw">y</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">abund</span>$<span class="no">abundance</span>), <span class="kw">label</span><span class="kw">=</span><span class="st">"  forecast"</span>, <span class="kw">hjust</span><span class="kw">=</span><span class="fl">0</span>) +
-  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="kw">x</span><span class="kw">=</span><span class="fl">2020</span>, <span class="kw">y</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">abund</span>$<span class="no">abundance</span>), <span class="kw">label</span><span class="kw">=</span><span class="st">"hindcast  "</span>, <span class="kw">hjust</span><span class="kw">=</span><span class="fl">1</span>)
-<span class="no">p</span></pre></body></html></div>
-<p><img src="Fitting_SDMs_files/figure-html/unnamed-chunk-12-1.png" width="576"></p>
+<p>The function <code><a href="../reference/plot_abund.html">plot_abund()</a></code> will plot the average abundances of the true data (from simulation) and the fitted models. The required argument is the simulated data (<code>sim1</code>), after that you can add as many fitted (SDM) or prediction (POM) objects as you want to compare. We will use the prediction objects since we already have those and if we pass in the SDMs, the plotting function has to re-run the predictions.</p>
+<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_abund.html">plot_abund</a></span>(<span class="no">sim1</span>, <span class="no">pred.gam2</span>, <span class="no">pred.mlp2</span>, <span class="no">pred.brt2</span>)</pre></body></html></div>
+<p><img src="Fitting_SDMs_files/figure-html/plot-abund1-1.png" width="576"></p>
 </div>
 <div id="calculate-and-plot-centre-of-gravity" class="section level2">
 <h2 class="hasAnchor">
 <a href="#calculate-and-plot-centre-of-gravity" class="anchor"></a>Calculate and plot centre of gravity</h2>
-<p>The function <code><a href="../reference/plot_cog.html">plot_cog()</a></code> will plot the center of gravity of the true data (from simulation) and the fitted models. The required argument is the simulated data (<code>sim1</code>), after that you can add as many fitted objects as you want to compare.</p>
-<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_cog.html">plot_cog</a></span>(<span class="no">sim1</span>, <span class="no">gam.fit</span>, <span class="no">mlp.fit</span>, <span class="no">brt.fit</span>)
-<span class="co">## getting prediction with gam.fit </span>
-<span class="co">## getting prediction with mlp.fit </span>
-<span class="co">## getting prediction with brt.fit</span></pre></body></html></div>
-<p><img src="Fitting_SDMs_files/figure-html/unnamed-chunk-13-1.png" width="576"></p>
-<div class="sourceCode" id="cb22"><html><body><pre class="r"># You can also pass in predictions
-# plot_cog(sim1, pred.gam2, pred.mlp2, pred.brt2)</pre></body></html></div>
-<p>Here is how to compute these COG plots without <code>plot_cog</code>. First we create a data frame of the COG predictions and true abundance.</p>
-<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="co"># First compute the true cog</span>
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">dplyr</span>)
-<span class="no">cog_lat</span> <span class="kw">&lt;-</span> <span class="no">x</span> <span class="kw">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html">group_by</a></span>(<span class="no">year</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html">summarize</a></span>(<span class="kw">cog</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/weighted.mean.html">weighted.mean</a></span>(<span class="kw">x</span><span class="kw">=</span><span class="no">lat</span>, <span class="kw">w</span><span class="kw">=</span><span class="no">abundance</span>))
-<span class="no">cog_lat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="kw">model</span><span class="kw">=</span><span class="st">"true"</span>, <span class="no">cog_lat</span>, <span class="kw">stringsAsFactors</span> <span class="kw">=</span> <span class="fl">FALSE</span>)
-
-<span class="co"># Now add the model cogs</span>
-<span class="no">tmp</span> <span class="kw">&lt;-</span> <span class="no">pred.all</span> <span class="kw">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html">group_by</a></span>(<span class="no">model</span>, <span class="no">year</span>) <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html">summarize</a></span>(<span class="kw">cog</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/stats/weighted.mean.html">weighted.mean</a></span>(<span class="kw">x</span><span class="kw">=</span><span class="no">lat</span>, <span class="kw">w</span><span class="kw">=</span><span class="no">pred</span>))
-
-<span class="co"># dplyr uses tibbles and they return a matrix when you use rbind().</span>
-<span class="co"># so use </span>
-<span class="no">cog_lat</span> <span class="kw">&lt;-</span> <span class="kw pkg">dplyr</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/bind.html">bind_rows</a></span>(<span class="no">cog_lat</span>, <span class="no">tmp</span>)</pre></body></html></div>
-<p><code>cog_lat</code> is now a data frame with the center of gravity and a model column for the model (or true).</p>
-<div class="sourceCode" id="cb24"><html><body><pre class="r"><span class="no">p</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">cog_lat</span>, <span class="fu">aes</span>(<span class="kw">x</span><span class="kw">=</span><span class="no">year</span>, <span class="kw">y</span><span class="kw">=</span><span class="no">cog</span>, <span class="kw">color</span><span class="kw">=</span><span class="no">model</span>)) +
-  <span class="fu">geom_line</span>() +
-  <span class="fu">ggtitle</span>(<span class="st">"Comparison of lnorm_low models"</span>) +
-  <span class="fu">ylab</span>(<span class="st">"Centre of Gravity (deg lat)"</span>) +
-  <span class="fu">geom_vline</span>(<span class="kw">xintercept</span><span class="kw">=</span><span class="fl">2020</span>) +
-  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="kw">x</span><span class="kw">=</span><span class="fl">2020</span>, <span class="kw">y</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">cog_lat</span>$<span class="no">cog</span>), <span class="kw">label</span><span class="kw">=</span><span class="st">"  forecast"</span>, <span class="kw">hjust</span><span class="kw">=</span><span class="fl">0</span>) +
-  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="kw">x</span><span class="kw">=</span><span class="fl">2020</span>, <span class="kw">y</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">cog_lat</span>$<span class="no">cog</span>), <span class="kw">label</span><span class="kw">=</span><span class="st">"hindcast  "</span>, <span class="kw">hjust</span><span class="kw">=</span><span class="fl">1</span>)
-
-<span class="no">p</span></pre></body></html></div>
-<p><img src="Fitting_SDMs_files/figure-html/unnamed-chunk-15-1.png" width="576"></p>
+<p>The function <code><a href="../reference/plot_cog.html">plot_cog()</a></code> will plot the center of gravity of the true data (from the simulation) and the fitted models. The required argument is the simulated data (<code>sim1</code>), after that you can add as many fitted or prediction objects as you want to compare.</p>
+<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_cog.html">plot_cog</a></span>(<span class="no">sim1</span>, <span class="no">pred.gam2</span>, <span class="no">pred.mlp2</span>, <span class="no">pred.brt2</span>)</pre></body></html></div>
+<p><img src="Fitting_SDMs_files/figure-html/plot-cog1-1.png" width="576"></p>
 </div>
-<div id="plot-surface-predictions" class="section level2">
+<div id="plot-average-presence" class="section level2">
 <h2 class="hasAnchor">
-<a href="#plot-surface-predictions" class="anchor"></a>Plot Surface Predictions</h2>
-<p>These are point predictions for individual cells. We will show this for a particular year, in this case 2021.</p>
-<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="co">#Future</span>
-<span class="no">Y</span> <span class="kw">=</span> <span class="fl">2021</span>
-<span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">sim1</span>$<span class="no">grid</span>, <span class="no">year</span><span class="kw">==</span><span class="no">Y</span>)
-<span class="co">#Truth</span>
-<span class="no">p1</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">x</span>, <span class="fu">aes</span>(<span class="no">lon</span>, <span class="no">lat</span>))+
-  <span class="fu">geom_tile</span>(<span class="fu">aes</span>(<span class="kw">fill</span><span class="kw">=</span><span class="no">abundance</span>)) +
-  <span class="fu">theme_classic</span>() +
-  <span class="fu">ggtitle</span>(<span class="st">"Truth"</span>)+
-  <span class="fu">labs</span>(<span class="kw">y</span><span class="kw">=</span><span class="st">"Latitude"</span>) +
-  <span class="fu">scale_x_continuous</span>(<span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">scale_y_continuous</span>( <span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">theme</span>(<span class="kw">legend.title</span><span class="kw">=</span><span class="fu">element_blank</span>(),
-        <span class="kw">plot.title</span> <span class="kw">=</span> <span class="fu">element_text</span>(<span class="kw">hjust</span><span class="kw">=</span><span class="fl">0.5</span>),
-        <span class="kw">panel.border</span> <span class="kw">=</span> <span class="fu">element_rect</span>(<span class="kw">colour</span> <span class="kw">=</span> <span class="st">"black"</span>, <span class="kw">fill</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">size</span><span class="kw">=</span><span class="fl">1</span>)) +
-  <span class="kw pkg">viridis</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/viridis/man/scale_viridis.html">scale_fill_viridis</a></span>()
-
-<span class="co">#Gam</span>
-<span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">pred.all</span>, <span class="no">year</span><span class="kw">==</span><span class="no">Y</span> <span class="kw">&amp;</span> <span class="no">model</span><span class="kw">==</span><span class="st">"gam"</span>)
-<span class="no">p2</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">x</span>, <span class="fu">aes</span>(<span class="no">lon</span>,<span class="no">lat</span>))+
-  <span class="fu">geom_tile</span>(<span class="fu">aes</span>(<span class="kw">fill</span><span class="kw">=</span><span class="no">pred</span>)) +
-  <span class="fu">theme_classic</span>() +
-  <span class="fu">ggtitle</span>(<span class="st">"GAM"</span>)+
-  <span class="fu">labs</span>(<span class="kw">y</span><span class="kw">=</span><span class="st">"Latitude"</span>) +
-  <span class="fu">scale_x_continuous</span>(<span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">scale_y_continuous</span>( <span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">theme</span>(<span class="kw">legend.title</span><span class="kw">=</span><span class="fu">element_blank</span>(),
-        <span class="kw">plot.title</span> <span class="kw">=</span> <span class="fu">element_text</span>(<span class="kw">hjust</span><span class="kw">=</span><span class="fl">0.5</span>),
-        <span class="kw">panel.border</span> <span class="kw">=</span> <span class="fu">element_rect</span>(<span class="kw">colour</span> <span class="kw">=</span> <span class="st">"black"</span>, <span class="kw">fill</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">size</span><span class="kw">=</span><span class="fl">1</span>)) +
-  <span class="kw pkg">viridis</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/viridis/man/scale_viridis.html">scale_fill_viridis</a></span>()
-
-<span class="co">#BRT</span>
-<span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">pred.all</span>, <span class="no">year</span><span class="kw">==</span><span class="no">Y</span> <span class="kw">&amp;</span> <span class="no">model</span><span class="kw">==</span><span class="st">"brt"</span>)
-<span class="no">p3</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">x</span>, <span class="fu">aes</span>(<span class="no">lon</span>,<span class="no">lat</span>))+
-  <span class="fu">geom_tile</span>(<span class="fu">aes</span>(<span class="kw">fill</span><span class="kw">=</span><span class="no">pred</span>)) +
-  <span class="fu">theme_classic</span>() +
-  <span class="fu">ggtitle</span>(<span class="st">"BRT"</span>)+
-  <span class="fu">labs</span>(<span class="kw">y</span><span class="kw">=</span><span class="st">"Latitude"</span>) +
-  <span class="fu">scale_x_continuous</span>(<span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">scale_y_continuous</span>( <span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">theme</span>(<span class="kw">legend.title</span><span class="kw">=</span><span class="fu">element_blank</span>(),
-        <span class="kw">plot.title</span> <span class="kw">=</span> <span class="fu">element_text</span>(<span class="kw">hjust</span><span class="kw">=</span><span class="fl">0.5</span>),
-        <span class="kw">panel.border</span> <span class="kw">=</span> <span class="fu">element_rect</span>(<span class="kw">colour</span> <span class="kw">=</span> <span class="st">"black"</span>, <span class="kw">fill</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">size</span><span class="kw">=</span><span class="fl">1</span>)) +
-  <span class="kw pkg">viridis</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/viridis/man/scale_viridis.html">scale_fill_viridis</a></span>()
-
-<span class="co">#Gam</span>
-<span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">pred.all</span>, <span class="no">year</span><span class="kw">==</span><span class="no">Y</span> <span class="kw">&amp;</span> <span class="no">model</span><span class="kw">==</span><span class="st">"mlp"</span>)
-<span class="no">p4</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">x</span>, <span class="fu">aes</span>(<span class="no">lon</span>,<span class="no">lat</span>))+
-  <span class="fu">geom_tile</span>(<span class="fu">aes</span>(<span class="kw">fill</span><span class="kw">=</span><span class="no">pred</span>)) +
-  <span class="fu">theme_classic</span>() +
-  <span class="fu">ggtitle</span>(<span class="st">"MLP"</span>)+
-  <span class="fu">labs</span>(<span class="kw">y</span><span class="kw">=</span><span class="st">"Latitude"</span>) +
-  <span class="fu">scale_x_continuous</span>(<span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">scale_y_continuous</span>( <span class="kw">expand</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>)) +
-  <span class="fu">theme</span>(<span class="kw">legend.title</span><span class="kw">=</span><span class="fu">element_blank</span>(),
-        <span class="kw">plot.title</span> <span class="kw">=</span> <span class="fu">element_text</span>(<span class="kw">hjust</span><span class="kw">=</span><span class="fl">0.5</span>),
-        <span class="kw">panel.border</span> <span class="kw">=</span> <span class="fu">element_rect</span>(<span class="kw">colour</span> <span class="kw">=</span> <span class="st">"black"</span>, <span class="kw">fill</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">size</span><span class="kw">=</span><span class="fl">1</span>)) +
-  <span class="kw pkg">viridis</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/viridis/man/scale_viridis.html">scale_fill_viridis</a></span>()
-
-<span class="kw pkg">gridExtra</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="no">p1</span>, <span class="no">p2</span>, <span class="no">p3</span>, <span class="no">p4</span>, <span class="kw">nrow</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
-<p><img src="Fitting_SDMs_files/figure-html/surf_pred-1.png" width="576"></p>
+<a href="#plot-average-presence" class="anchor"></a>Plot average presence</h2>
+<p>The function <code><a href="../reference/plot_pres.html">plot_pres()</a></code> will plot the average presence.</p>
+<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_pres.html">plot_pres</a></span>(<span class="no">sim1</span>, <span class="no">pred.gam2</span>, <span class="no">pred.mlp2</span>, <span class="no">pred.brt2</span>)</pre></body></html></div>
+<p><img src="Fitting_SDMs_files/figure-html/plot-pres1-1.png" width="576"></p>
+</div>
+<div id="plot-abundance-on-a-grid" class="section level2">
+<h2 class="hasAnchor">
+<a href="#plot-abundance-on-a-grid" class="anchor"></a>Plot abundance on a grid</h2>
+<p>These are point predictions of abundance for individual cells. We will show this for a particular year, in this case 2021.</p>
+<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_grid.html">plot_grid</a></span>(<span class="no">sim1</span>, <span class="kw">year</span><span class="kw">=</span><span class="fl">2021</span>, <span class="no">pred.gam</span>, <span class="no">pred.mlp</span>, <span class="no">pred.brt</span>)</pre></body></html></div>
+<p><img src="Fitting_SDMs_files/figure-html/plot-grid1-1.png" width="576"></p>
+<div class="sourceCode" id="cb21"><html><body><pre class="r"># You can also pass in SDMs but the predictions will be computed (slow)
+# plot_grid(sim1, year=2021, gam.fit, mlp.fit, brt.fit)</pre></body></html></div>
 </div>
 </div>
   </div>

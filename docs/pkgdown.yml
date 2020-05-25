@@ -3,7 +3,8 @@ pkgdown: 1.5.0.9000
 pkgdown_sha: a1c9e07904a309683d9a8d2af153707658ecec8d
 articles:
   Fitting_SDMs: Fitting_SDMs.html
+  Plotting: Plotting.html
   Run_OM: Run_OM.html
   Package: pkgdown/Package.html
-last_built: 2020-05-14T03:50Z
+last_built: 2020-05-25T11:28Z
 

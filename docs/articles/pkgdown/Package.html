@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../../index.html">WRAP</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.5</span>
       </span>
     </div>
 
@@ -132,7 +132,8 @@
 <div id="vignettes" class="section level2">
 <h2 class="hasAnchor">
 <a href="#vignettes" class="anchor"></a>Vignettes</h2>
-<p>If a new vignette is added to vignettes folder run this. <code>build_vignettes</code> is putting the <code>doc</code> folder at the base level instead of keeping in <code>inst</code> because normally you make the vignette files when building but I don’t want to do that since they take a long time. Note if pandoc won’t build vignettes, try closing everything and restarting computer.</p>
+<p>If a new vignette is added to vignettes folder run this. <code>build_vignettes</code> is putting the <code>doc</code> folder at the base level instead of keeping in <code>inst</code> because normally you make the vignette files when building but I don’t want to do that since they take a long time.</p>
+<p>Note if pandoc or RStudio won’t build vignettes or throw strange errors, try deleting all the cache folders. If it still has problems, try closing everything and restarting computer.</p>
 <pre><code><a href="https://rdrr.io/pkg/devtools/man/build_vignettes.html">devtools::build_vignettes()
 library(ff)
 file.move("doc",file.path("inst", "doc"))
@@ -142,6 +143,12 @@ file.remove("Meta")</a></code></pre>
 <pre><code>vignette(package="WRAP")</code></pre>
 <p>And this will open a vignette in the help window.</p>
 <pre><code><a href="../../articles/Run_OM.html">vignette("Run_OM", package="WRAP")</a></code></pre>
+</div>
+<div id="checking-package" class="section level2">
+<h2 class="hasAnchor">
+<a href="#checking-package" class="anchor"></a>Checking package</h2>
+<p>Use the following to check without rebuilding the vignettes.</p>
+<pre><code><a href="https://rdrr.io/pkg/devtools/man/check.html">devtools::check(args="--no-build-vignettes", build_args="--no-build-vignettes", vignettes=FALSE)</a></code></pre>
 </div>
 <div id="pkgdown" class="section level2">
 <h2 class="hasAnchor">
