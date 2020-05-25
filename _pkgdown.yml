@@ -43,16 +43,29 @@ reference:
       - SimulateWorld
       - SimulateWorld_ROMS
       - SimulateWorld_ROMS_TrophicInteraction
-      - OMclass
+      - OM_class
   - title: "Fitting"
     desc: >
       Functions for fitting SDMs using GAMs, Boosted Regression Trees (BRT), and Neural Nets (MLP). 
       These functions take as input, a OM object as returned by the simulation functions above. The
       OM object has information (in object$meta) about the simulation that is used in the fitting function.
+      The fitting functions return an object of class SDM that can be passed to prediction and plotting
+      functions.
     contents:
       - gam_sdm
       - brt_sdm
       - mlp_sdm
+      - SDM_class
+  - title: "Predicting"
+    desc: >
+      OMs can be passed to the predict function to create predictions. The model to use
+      will be specified with the `model` argument. Alternatively a fitted model can be 
+      passed in and that will be used for prediction. The predict.OM function returns an
+      object of class POM.
+    contents:
+      - predict.OM
+      - plot.OM
+      - POM_class
   - title: "OM Methods"
     desc: >
       The simulation functions return an OM object (a list) with meta and grid. meta has information
@@ -61,7 +74,11 @@ reference:
     contents:
       - predict.OM
       - print.OM
+      - plot.OM
       - plot_cog
+      - plot_abund
+      - plot_grid
+      - plot_pres
   - title: "Misc"
     desc: >
       Helper functions
