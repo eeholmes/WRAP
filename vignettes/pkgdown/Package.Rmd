@@ -77,7 +77,7 @@ vignette("Run_OM", package="WRAP")
 Build the vignettes first so they are in the inst/doc folder. Otherwise `check()` will build them again.
 
 ```
-devtools::check(build_args="--no-build-vignettes")
+devtools::check(args="--no-build-vignettes", build_args="--no-build-vignettes", vignettes=FALSE)
 ```
 
 ## pkgdown
