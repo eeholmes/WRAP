@@ -1,14 +1,15 @@
-#' Prints OM object
+#' Prints SDM object
 #' 
-#' prints a \link[=OM_class]{OM} object returned from one of the simulation functions.
+#' prints a \link[=SDM_class]{SDM} object returned from one of the simulation functions.
 #' 
-#' @param x OM object
+#' @param x SDM object
 #' @param ... Not used
-#' @method print OM
+#' @method print SDM
 #' @export
-print.OM <- function(x, ...) {
+print.SDM <- function(x, ...) {
   str <- c(
-    paste0("Simulated species abundance and suitability from WRAP version ", x$meta$version, " and function ", x$meta$func, "\n"),
+    paste0("Fitted SDM of class ", class(x)[2], " from WRAP version ", x$meta$version, " fit to OM from function ", x$meta$func, "\n"),
+    paste0("presence fit is in x$presence and abundance fit in x$abundance\n"),
     paste0("  covariates: ", x$meta$covariates, "\n"),
     paste0("  grid.dimensions: ", paste(x$meta$grid.dimensions, collapse=", "), " (nrow, ncol, cells) \n"),
     paste0("  grid.resolution ", paste(x$meta$grid.resolution, collapse=", "), " (x, y) \n"),
