@@ -48,7 +48,9 @@ That's pretty much it.  Package format standardizes documentation but also ensur
 
 ## Vignettes
 
-If a new vignette is added to vignettes folder run this. `build_vignettes` is putting the `doc` folder at the base level instead of keeping in `inst` because normally you make the vignette files when building but I don't want to do that since they take a long time. Note if pandoc won't build vignettes, try closing everything and restarting computer.
+If a new vignette is added to vignettes folder run this. `build_vignettes` is putting the `doc` folder at the base level instead of keeping in `inst` because normally you make the vignette files when building but I don't want to do that since they take a long time. 
+
+Note if pandoc or RStudio won't build vignettes or throw strange errors, try deleting all the cache folders. If it still has problems, try closing everything and restarting computer.
 
 ```
 devtools::build_vignettes()
@@ -68,6 +70,14 @@ And this will open a vignette in the help window.
 
 ```
 vignette("Run_OM", package="WRAP")
+```
+
+## Checking package
+
+Build the vignettes first so they are in the inst/doc folder. Otherwise `check()` will build them again.
+
+```
+devtools::check(build_args="--no-build-vignettes")
 ```
 
 ## pkgdown
