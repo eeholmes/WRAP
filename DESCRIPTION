@@ -1,10 +1,10 @@
 Package: WRAP
 Type: Package
 Title: WRAP Location Study
-Version: 1.4
-Date: 2020-05-11
+Version: 1.5
+Date: 2020-05-25
 Depends: 
-  R (>= 3.5.0), ggplot2, virtualspecies, stats, utils
+  R (>= 3.5.0), ggplot2 (>= 3.3.0), virtualspecies, stats, utils
 Imports:
   dplyr,
   scales,
@@ -18,7 +18,9 @@ Imports:
   neuralnet,
   here,
   stringr,
-  Rdpack
+  Rdpack,
+  reshape2,
+  rlang
 Suggests: knitr, rmarkdown, gridExtra, testthat
 Authors@R: c(person("Stephanie", "Brodie", role = c("aut", "cre"), email = "stephanie.brodie@noaa.gov"),
              person("James", "Smith", role = "aut", email = "james.smith@noaa.gov"),
