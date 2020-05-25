@@ -38,11 +38,21 @@ The simulation functions return a `OM` object. There is a
 * `predict` method for `OM` objects. It returns a data frame with hindcast and forecast predicitons or you can pass in newdata.
 * `print` method for `OM` objects. Type `sim` and basic info about the simulation is shown. Full information is in `sim$meta`.
 
-The functions to fit a SDM from a grid of covariates and abundances is
+The functions to fit a `SDM` from a grid of covariates and abundances is
 
 * `gam_sdm`
 * `brt_sdm`
 * `mlp_sdm`
+
+The predict function will take a `SDM` and make hindcast and forecast predictions.
+
+The functions to plot are
+
+* `plot_abund`
+* `plot_pres`
+* `plot_cog`
+* `plot_grid`
+* `plot` for OM and POM objects
 
 ## ROMS data
 
