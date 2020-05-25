@@ -18,7 +18,7 @@
 #' sim1 <- SimulateWorld(start.year=2015, n.year=20)
 #' sim2 <- SimulateWorld(start.year=2040, n.year=20)
 #' mlp.fit <- mlp_sdm(sim, "temp")
-#' plot_abund(sim, mlp.fit, sim2)
+#' plot_abund(sim1, mlp.fit, sim2)
 #' 
 #' @export
 plot_abund <- function(x, ...) {
