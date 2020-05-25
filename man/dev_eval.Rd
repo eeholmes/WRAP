@@ -17,7 +17,7 @@ function to extract explained deviance from BRT
 }
 \examples{
 # use defaults
-sim <- SimulateWorld()
+sim1 <- SimulateWorld(start.year=2015, n.year=20)
 fit <- brt_sdm(sim, "temp")
 dev_eval(fit)
 

@@ -18,7 +18,7 @@
 #' 
 #' @examples
 #' # use defaults
-#' data <- SimulateWorld()$grid
+#' data <- SimulateWorld(start.year=2000, n.year=20)$grid
 #' # plot time-series of total catch in observed years
 #' plot(aggregate(abundance~year,data[data$year<=2010,], FUN="sum"),type="l",ylab="Abundance")
 #' # plot time-series of total catch in forecast years

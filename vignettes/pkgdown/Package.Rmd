@@ -74,7 +74,7 @@ vignette("Run_OM", package="WRAP")
 
 ## Checking package
 
-Build the vignettes first so they are in the inst/doc folder. Otherwise `check()` will build them again.
+Use the following to check without rebuilding the vignettes.
 
 ```
 devtools::check(args="--no-build-vignettes", build_args="--no-build-vignettes", vignettes=FALSE)

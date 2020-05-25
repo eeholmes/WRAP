@@ -26,7 +26,7 @@ If the objects to be compared are \link[=SDM_class]{SDM} objects and
 \examples{
 sim1 <- SimulateWorld(start.year=2015, n.year=20)
 sim2 <- SimulateWorld(start.year=2040, n.year=20)
-mlp.fit <- mlp_sdm(sim, "temp")
+mlp.fit <- mlp_sdm(sim1, "temp")
 plot_abund(sim1, mlp.fit, sim2)
 
 }
