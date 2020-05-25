@@ -12,8 +12,7 @@
 #' @return A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 #' 
 #' @examples
-#' sim <- SimulateWorld()
-#' # abundance fit
+#' sim <- SimulateWorld(start.year=2015, n.year=20)
 #' fit <- mlp_sdm(sim, "temp")$abundance
 #' dat <- fit$data #data used for fit
 #' dat$mlpAbun <- predict(fit, dat)

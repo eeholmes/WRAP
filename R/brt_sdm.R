@@ -13,7 +13,7 @@
 #' @return A \link[=SDM_class]{SDM} object, which is a list with the presence and abundance fits and the meta data.
 #'
 #' @examples
-#' sim <- SimulateWorld(n.year=10)
+#' sim <- SimulateWorld(start.year=2015, n.year=20)
 #' # abundance fit
 #' fit <- brt_sdm(sim, "temp")$abundance
 #' dev_eval(fit)
