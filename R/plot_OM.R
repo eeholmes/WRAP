@@ -32,7 +32,7 @@ plot.OM <- function(x, ..., start.forecast.year=NULL) {
  
   if(!is.null(start.forecast.year)){
     p <- ggplot(year_mean, aes(x=.data$date, y=.data$value)) + geom_line(col="grey") +
-    geom_line(aes(x=.data$date, y=.data$value), col="blue", subset(year_mean, .data$year<=start.forecast.year)) +
+    geom_line(aes(x=.data$date, y=.data$value), col="blue", subset(year_mean, year<=start.forecast.year)) +
     facet_wrap(~variable, scales = "free_y") +
     xlab("year")
   }else{

@@ -23,7 +23,7 @@ plot.POM <- function(x, ...) {
   year_mean <- subset(year_mean, .data$variable %in% good.vars)
   if(start.forecast.year<max(x$year)){
     p <- ggplot(year_mean, aes(x=.data$date, y=.data$value)) + geom_line(col="grey") +
-    geom_line(aes(x=.data$date, y=.data$value), col="blue", subset(year_mean, .data$year<=start.forecast.year)) +
+    geom_line(aes(x=.data$date, y=.data$value), col="blue", subset(year_mean, year<=start.forecast.year)) +
     facet_wrap(~.data$variable, scales = "free_y") +
     xlab("") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 0.5))
